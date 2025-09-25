@@ -4,18 +4,13 @@
 node_modules
 /.pnp
 .pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
 
 # testing
 /coverage
 
 # next.js
-/.next/
-/out/
+.next
+out
 
 # production
 /build
@@ -41,14 +36,14 @@ yarn-error.log*
 next-env.d.ts
 
 # Anchor
-/anchor/.anchor
-/anchor/target/debug
-/anchor/target/deploy
-/anchor/target/release
-/anchor/target/sbf-solana-solana
-/anchor/target/sbpf-solana-solana
-/anchor/target/test-ledger
-/anchor/target/.rustc_info.json
+/packages/anchor/.anchor
+/packages/anchor/target/debug
+/packages/anchor/target/deploy
+/packages/anchor/target/release
+/packages/anchor/target/sbf-solana-solana
+/packages/anchor/target/sbpf-solana-solana
+/packages/anchor/target/test-ledger
+/packages/anchor/target/.rustc_info.json
 test-ledger
 **/*.rs.bk
 
