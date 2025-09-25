@@ -275,7 +275,7 @@ describe("obsidianprotocol", () => {
 
         assert.fail("Should have failed with missing attestation");
       } catch (error) {
-        expect(error.toString()).to.include("AccountNotInitialized");
+        expect((error as Error).toString()).to.include("AccountNotInitialized");
       }
     });
   });
