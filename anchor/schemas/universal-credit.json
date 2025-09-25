@@ -1,0 +1,63 @@
+{
+  "name": "obsidian-universal-credit-v1",
+  "description": "Universal credit scoring schema for humans and AI agents",
+  "version": "1.0.0",
+  "schema": {
+    "entityType": {
+      "type": "enum",
+      "values": ["human", "ai_agent"],
+      "description": "Type of entity being assessed"
+    },
+    "creditScore": {
+      "type": "u16",
+      "description": "Calculated credit score (300-850 range)"
+    },
+    "verifiedIncome": {
+      "type": "u64",
+      "description": "Verified annual income in lamports (humans only)"
+    },
+    "employmentStatus": {
+      "type": "string",
+      "description": "Employment status (humans only)",
+      "enum": ["employed", "self_employed", "unemployed", "student"]
+    },
+    "zkProofHash": {
+      "type": "[u8; 32]",
+      "description": "Hash of zkTLS proof for income verification (humans only)"
+    },
+    "totalRevenue": {
+      "type": "u64",
+      "description": "Total revenue generated in lamports (agents only)"
+    },
+    "successRate": {
+      "type": "u8",
+      "description": "Task success rate percentage (agents only)"
+    },
+    "operationalDays": {
+      "type": "u16",
+      "description": "Days the agent has been operational (agents only)"
+    },
+    "frameworkType": {
+      "type": "string",
+      "description": "AI framework used (agents only)",
+      "enum": ["ElizaOS", "AI16Z", "AutoGPT", "Custom", "Other"]
+    },
+    "walletAge": {
+      "type": "u16",
+      "description": "Age of wallet in days (agents only)"
+    },
+    "issuanceDate": {
+      "type": "i64",
+      "description": "Unix timestamp when attestation was issued"
+    },
+    "expiryDate": {
+      "type": "i64",
+      "description": "Unix timestamp when attestation expires"
+    }
+  },
+  "required": ["entityType", "creditScore", "issuanceDate", "expiryDate"],
+  "conditional": {
+    "human": ["verifiedIncome", "employmentStatus", "zkProofHash"],
+    "ai_agent": ["totalRevenue", "successRate", "operationalDays", "frameworkType", "walletAge"]
+  }
+}

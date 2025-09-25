@@ -5,13 +5,18 @@ import { useWalletTransactionSignAndSend } from '@/components/solana/use-wallet-
 import { toastTx } from '@/components/toast-tx'
 import { useObsidianprotocolAccountsInvalidate } from './use-obsidianprotocol-accounts-invalidate'
 
-export function useObsidianprotocolDecrementMutation({ obsidianprotocol }: { obsidianprotocol: ObsidianprotocolAccount }) {
+export function useObsidianprotocolDecrementMutation({
+  obsidianprotocol,
+}: {
+  obsidianprotocol: ObsidianprotocolAccount
+}) {
   const invalidateAccounts = useObsidianprotocolAccountsInvalidate()
   const signer = useWalletUiSigner()
   const signAndSend = useWalletTransactionSignAndSend()
 
   return useMutation({
-    mutationFn: async () => await signAndSend(getDecrementInstruction({ obsidianprotocol: obsidianprotocol.address }), signer),
+    mutationFn: async () =>
+      await signAndSend(getDecrementInstruction({ obsidianprotocol: obsidianprotocol.address }), signer),
     onSuccess: async (tx) => {
       toastTx(tx)
       await invalidateAccounts()

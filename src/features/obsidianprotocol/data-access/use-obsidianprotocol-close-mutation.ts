@@ -12,7 +12,10 @@ export function useObsidianprotocolCloseMutation({ obsidianprotocol }: { obsidia
 
   return useMutation({
     mutationFn: async () => {
-      return await signAndSend(getCloseInstruction({ payer: signer, obsidianprotocol: obsidianprotocol.address }), signer)
+      return await signAndSend(
+        getCloseInstruction({ payer: signer, obsidianprotocol: obsidianprotocol.address }),
+        signer,
+      )
     },
     onSuccess: async (tx) => {
       toastTx(tx)

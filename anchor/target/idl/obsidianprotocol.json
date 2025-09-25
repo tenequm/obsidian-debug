@@ -4,58 +4,29 @@
     "name": "obsidianprotocol",
     "version": "0.1.0",
     "spec": "0.1.0",
-    "description": "Created with Anchor"
+    "description": "Universal credit infrastructure for all intelligence types"
   },
   "instructions": [
     {
-      "name": "close",
-      "discriminator": [98, 165, 201, 177, 108, 65, 206, 96],
+      "name": "create_agent_attestation",
+      "discriminator": [
+        40,
+        6,
+        12,
+        39,
+        0,
+        35,
+        0,
+        28
+      ],
       "accounts": [
         {
-          "name": "payer",
+          "name": "owner",
           "writable": true,
           "signer": true
         },
         {
-          "name": "obsidianprotocol",
-          "writable": true
-        }
-      ],
-      "args": []
-    },
-    {
-      "name": "decrement",
-      "discriminator": [106, 227, 168, 59, 248, 27, 150, 101],
-      "accounts": [
-        {
-          "name": "obsidianprotocol",
-          "writable": true
-        }
-      ],
-      "args": []
-    },
-    {
-      "name": "increment",
-      "discriminator": [11, 18, 104, 9, 104, 174, 59, 33],
-      "accounts": [
-        {
-          "name": "obsidianprotocol",
-          "writable": true
-        }
-      ],
-      "args": []
-    },
-    {
-      "name": "initialize",
-      "discriminator": [175, 175, 109, 31, 13, 152, 155, 237],
-      "accounts": [
-        {
-          "name": "payer",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "obsidianprotocol",
+          "name": "attestation",
           "writable": true,
           "signer": true
         },
@@ -64,40 +35,279 @@
           "address": "11111111111111111111111111111111"
         }
       ],
-      "args": []
+      "args": [
+        {
+          "name": "credit_score",
+          "type": "u16"
+        },
+        {
+          "name": "_total_revenue",
+          "type": "u64"
+        },
+        {
+          "name": "_success_rate",
+          "type": "u8"
+        },
+        {
+          "name": "_operational_days",
+          "type": "u16"
+        },
+        {
+          "name": "framework_type",
+          "type": "u8"
+        }
+      ]
     },
     {
-      "name": "set",
-      "discriminator": [198, 51, 53, 241, 116, 29, 126, 194],
+      "name": "create_human_attestation",
+      "discriminator": [
+        239,
+        214,
+        7,
+        57,
+        230,
+        224,
+        238,
+        104
+      ],
       "accounts": [
         {
-          "name": "obsidianprotocol",
-          "writable": true
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "attestation",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
         }
       ],
       "args": [
         {
-          "name": "value",
-          "type": "u8"
+          "name": "credit_score",
+          "type": "u16"
+        },
+        {
+          "name": "_verified_income",
+          "type": "u64"
+        },
+        {
+          "name": "_employment_status",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "request_loan",
+      "discriminator": [
+        120,
+        2,
+        7,
+        7,
+        1,
+        219,
+        235,
+        187
+      ],
+      "accounts": [
+        {
+          "name": "borrower",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "loan_account",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "attestation"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "_loan_id",
+          "type": "u64"
         }
       ]
     }
   ],
   "accounts": [
     {
-      "name": "Obsidianprotocol",
-      "discriminator": [255, 176, 4, 245, 188, 253, 124, 25]
+      "name": "Attestation",
+      "discriminator": [
+        152,
+        125,
+        183,
+        86,
+        36,
+        146,
+        121,
+        73
+      ]
+    },
+    {
+      "name": "LoanAccount",
+      "discriminator": [
+        223,
+        49,
+        62,
+        167,
+        247,
+        182,
+        239,
+        60
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "CreditScoreTooLow",
+      "msg": "Credit score too low"
+    },
+    {
+      "code": 6001,
+      "name": "AttestationExpired",
+      "msg": "Attestation expired"
+    },
+    {
+      "code": 6002,
+      "name": "InvalidEntityType",
+      "msg": "Invalid entity type"
+    },
+    {
+      "code": 6003,
+      "name": "LoanAmountExceedsLimit",
+      "msg": "Loan amount exceeds limit"
     }
   ],
   "types": [
     {
-      "name": "Obsidianprotocol",
+      "name": "Attestation",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "count",
+            "name": "entity_type",
+            "type": {
+              "defined": {
+                "name": "EntityType"
+              }
+            }
+          },
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "credit_score",
+            "type": "u16"
+          },
+          {
+            "name": "created_at",
+            "type": "i64"
+          },
+          {
+            "name": "expires_at",
+            "type": "i64"
+          },
+          {
+            "name": "framework_type",
             "type": "u8"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "EntityType",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Human"
+          },
+          {
+            "name": "Agent"
+          }
+        ]
+      }
+    },
+    {
+      "name": "LoanAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "borrower",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "credit_score",
+            "type": "u16"
+          },
+          {
+            "name": "status",
+            "type": {
+              "defined": {
+                "name": "LoanStatus"
+              }
+            }
+          },
+          {
+            "name": "entity_type",
+            "type": {
+              "defined": {
+                "name": "EntityType"
+              }
+            }
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "LoanStatus",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Requested"
+          },
+          {
+            "name": "Approved"
+          },
+          {
+            "name": "Rejected"
+          },
+          {
+            "name": "Funded"
+          },
+          {
+            "name": "Repaid"
           }
         ]
       }
