@@ -1,4 +1,8 @@
-import { ObsidianprotocolAccount } from '@project/anchor'
+interface ObsidianprotocolAccount {
+  address: string
+  count: number
+  [key: string]: unknown
+}
 import { Button } from '@/components/ui/button'
 
 import { useObsidianprotocolDecrementMutation } from '../data-access/use-obsidianprotocol-decrement-mutation'

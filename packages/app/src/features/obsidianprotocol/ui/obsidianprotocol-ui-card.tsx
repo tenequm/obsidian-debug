@@ -1,4 +1,8 @@
-import { ObsidianprotocolAccount } from '@project/anchor'
+interface ObsidianprotocolAccount {
+  address: string
+  count: number
+  [key: string]: unknown
+}
 import { ellipsify } from '@wallet-ui/react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { AppExplorerLink } from '@/components/app-explorer-link'
@@ -11,7 +15,7 @@ export function ObsidianprotocolUiCard({ obsidianprotocol }: { obsidianprotocol:
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Obsidianprotocol: {obsidianprotocol.data.count}</CardTitle>
+        <CardTitle>Obsidianprotocol: {obsidianprotocol.count}</CardTitle>
         <CardDescription>
           Account: <AppExplorerLink address={obsidianprotocol.address} label={ellipsify(obsidianprotocol.address)} />
         </CardDescription>

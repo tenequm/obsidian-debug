@@ -1,26 +1,22 @@
-import { ObsidianprotocolAccount, getSetInstruction } from '@project/anchor'
 import { useMutation } from '@tanstack/react-query'
-import { useWalletTransactionSignAndSend } from '@/components/solana/use-wallet-transaction-sign-and-send'
-import { useWalletUiSigner } from '@/components/solana/use-wallet-ui-signer'
-import { toastTx } from '@/components/toast-tx'
+import { toast } from 'sonner'
 import { useObsidianprotocolAccountsInvalidate } from './use-obsidianprotocol-accounts-invalidate'
+
+interface ObsidianprotocolAccount {
+  address: string
+  [key: string]: unknown
+}
 
 export function useObsidianprotocolSetMutation({ obsidianprotocol }: { obsidianprotocol: ObsidianprotocolAccount }) {
   const invalidateAccounts = useObsidianprotocolAccountsInvalidate()
-  const signAndSend = useWalletTransactionSignAndSend()
-  const signer = useWalletUiSigner()
 
   return useMutation({
-    mutationFn: async (value: number) =>
-      await signAndSend(
-        getSetInstruction({
-          obsidianprotocol: obsidianprotocol.address,
-          value,
-        }),
-        signer,
-      ),
-    onSuccess: async (tx) => {
-      toastTx(tx)
+    mutationFn: async ({ value }: { value: number }) => {
+      // TODO: Implement set value
+      toast.info(`Set value to ${value} not yet implemented`)
+      return null
+    },
+    onSuccess: async () => {
       await invalidateAccounts()
     },
   })

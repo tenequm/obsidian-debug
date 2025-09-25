@@ -1,4 +1,8 @@
-import { ObsidianprotocolAccount } from '@project/anchor'
+interface ObsidianprotocolAccount {
+  address: string
+  count: number
+  [key: string]: unknown
+}
 import { Button } from '@/components/ui/button'
 
 import { useObsidianprotocolCloseMutation } from '@/features/obsidianprotocol/data-access/use-obsidianprotocol-close-mutation'

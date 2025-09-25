@@ -1,13 +1,21 @@
 import { useSolana } from '@/components/solana/use-solana'
 import { useQuery } from '@tanstack/react-query'
-import { getObsidianprotocolProgramAccounts } from '@project/anchor'
 import { useObsidianprotocolAccountsQueryKey } from './use-obsidianprotocol-accounts-query-key'
 
-export function useObsidianprotocolAccountsQuery() {
-  const { client } = useSolana()
+interface ObsidianprotocolAccount {
+  address: string
+  count: number
+  [key: string]: unknown
+}
 
-  return useQuery({
+export function useObsidianprotocolAccountsQuery() {
+  useSolana() // Will be used when implementing account fetching
+
+  return useQuery<ObsidianprotocolAccount[]>({
     queryKey: useObsidianprotocolAccountsQueryKey(),
-    queryFn: async () => await getObsidianprotocolProgramAccounts(client.rpc),
+    queryFn: async () => {
+      // TODO: Implement fetching attestation accounts
+      return [] as ObsidianprotocolAccount[]
+    },
   })
 }

@@ -1,9 +1,11 @@
-import { ObsidianprotocolAccount, getIncrementInstruction } from '@project/anchor'
 import { useMutation } from '@tanstack/react-query'
-import { toastTx } from '@/components/toast-tx'
-import { useWalletUiSigner } from '@/components/solana/use-wallet-ui-signer'
-import { useWalletTransactionSignAndSend } from '@/components/solana/use-wallet-transaction-sign-and-send'
+import { toast } from 'sonner'
 import { useObsidianprotocolAccountsInvalidate } from './use-obsidianprotocol-accounts-invalidate'
+
+interface ObsidianprotocolAccount {
+  address: string
+  [key: string]: unknown
+}
 
 export function useObsidianprotocolIncrementMutation({
   obsidianprotocol,
@@ -11,14 +13,14 @@ export function useObsidianprotocolIncrementMutation({
   obsidianprotocol: ObsidianprotocolAccount
 }) {
   const invalidateAccounts = useObsidianprotocolAccountsInvalidate()
-  const signAndSend = useWalletTransactionSignAndSend()
-  const signer = useWalletUiSigner()
 
   return useMutation({
-    mutationFn: async () =>
-      await signAndSend(getIncrementInstruction({ obsidianprotocol: obsidianprotocol.address }), signer),
-    onSuccess: async (tx) => {
-      toastTx(tx)
+    mutationFn: async () => {
+      // TODO: Implement increment
+      toast.info('Increment not yet implemented')
+      return null
+    },
+    onSuccess: async () => {
       await invalidateAccounts()
     },
   })
