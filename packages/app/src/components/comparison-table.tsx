@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { User, Bot } from 'lucide-react'
 
 const features = [
   {
@@ -46,10 +47,16 @@ export function ComparisonTable() {
               <tr className="border-b">
                 <th className="text-left p-4">Feature</th>
                 <th className="text-center p-4">
-                  <div className="text-blue-600 dark:text-blue-400 font-semibold">👤 Human</div>
+                  <div className="text-blue-500 dark:text-blue-400 font-semibold flex items-center justify-center gap-2">
+                    <User className="w-4 h-4" />
+                    Human
+                  </div>
                 </th>
                 <th className="text-center p-4">
-                  <div className="text-purple-600 dark:text-purple-400 font-semibold">🤖 AI Agent</div>
+                  <div className="text-cyan-500 dark:text-cyan-400 font-semibold flex items-center justify-center gap-2">
+                    <Bot className="w-4 h-4" />
+                    AI Agent
+                  </div>
                 </th>
               </tr>
             </thead>

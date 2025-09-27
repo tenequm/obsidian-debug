@@ -5,13 +5,13 @@ import { Twitter, Mail, Sparkles } from 'lucide-react'
 export function SocialCTA() {
   return (
     <div className="w-full py-16 px-4">
-      <Card className="max-w-3xl mx-auto bg-gradient-to-r from-purple-500/10 via-blue-500/10 to-purple-500/10 border-purple-500/20">
+      <Card className="max-w-3xl mx-auto bg-gradient-to-r from-slate-900/50 via-blue-900/20 to-indigo-900/50 border-blue-500/30 backdrop-blur-sm">
         <CardContent className="p-8 text-center space-y-6">
           <div className="flex justify-center mb-4">
-            <Sparkles className="w-12 h-12 text-purple-500" />
+            <Sparkles className="w-12 h-12 text-cyan-400" />
           </div>
 
-          <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+          <h2 className="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
             Interested in Obsidian Protocol?
           </h2>
 
