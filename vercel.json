@@ -1,0 +1,9 @@
+{
+  "framework": "nextjs",
+  "buildCommand": "cd packages/app && pnpm run build",
+  "outputDirectory": "packages/app/.next",
+  "installCommand": "pnpm install",
+  "devCommand": "pnpm run dev",
+  "rootDirectory": "./",
+  "ignoreCommand": "git diff HEAD^ HEAD --quiet ."
+}

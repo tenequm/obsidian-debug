@@ -64,7 +64,7 @@ export const TEST_AGENT_PROFILES: AgentCreditProfile[] = [
     successRate: 89,
     operationalDays: 365,
     framework: 'Custom',
-    description: 'High-revenue trading agent with excellent track record',
+    description: 'Truth Terminal - AI agent with $850K monthly revenue and excellent performance',
   },
   {
     id: 'agent-ecosystem-leader',
@@ -74,7 +74,7 @@ export const TEST_AGENT_PROFILES: AgentCreditProfile[] = [
     successRate: 76,
     operationalDays: 240,
     framework: 'AI16Z',
-    description: 'Ecosystem leader with strong community presence',
+    description: 'Zerebro - AI16Z ecosystem leader with $420K revenue and strong community presence',
   },
   {
     id: 'agent-eliza',

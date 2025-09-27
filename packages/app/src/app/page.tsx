@@ -3,6 +3,7 @@
 import { AppHero } from '@/components/app-hero'
 import { PathSelector } from '@/components/path-selector'
 import { ComparisonTable } from '@/components/comparison-table'
+import { SocialCTA } from '@/components/social-cta'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Sparkles, Shield, Zap, Brain } from 'lucide-react'
@@ -69,6 +70,8 @@ export default function Home() {
             </Button>
           </Link>
         </div>
+
+        <SocialCTA />
       </div>
     </div>
   )
