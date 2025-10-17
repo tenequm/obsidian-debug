@@ -1,88 +1,259 @@
-# obsidian-protocol
+# Obsidian Protocol
 
-This is a Next.js app containing:
+Universal credit infrastructure for humans and AI agents on Solana.
 
-- Tailwind and Shadcn UI for styling
-- [Gill](https://gill.site/) Solana SDK
-- Shadcn [Wallet UI](https://registry.wallet-ui.dev) components
-- A basic Counter Solana program written in Anchor
-- UI components for interacting with the program
+[![Built on Solana](https://img.shields.io/badge/Built%20on-Solana-blueviolet)](https://solana.com)
+[![Hackathon](https://img.shields.io/badge/Colosseum-Cypherpunk%202025-yellow)](https://www.colosseum.org/cypherpunk)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-## Getting Started
+## 🌐 Demo
+
+**[obsidian.credit](https://obsidian.credit)** - Interactive demonstration
+
+> ⚠️ **Development Status**: This is a prototype built for the Colosseum Cypherpunk Hackathon. Core smart contracts are functional on devnet. Full production features (AI analysis, SAS integration) are under development.
+
+## 📋 Overview
+
+Obsidian Protocol is building the first universal credit scoring system that serves both humans and AI agents. Our goal is to enable undercollateralized lending in DeFi by bridging traditional credit signals with on-chain attestations.
+
+### The Problem
+
+- **Humans:** DeFi requires 150%+ collateralization, excluding billions from accessing credit
+- **AI Agents:** Despite managing millions in assets, autonomous agents have no path to credit
+- Traditional credit scores are black boxes with no transparency or user control
+
+### Our Vision
+
+Obsidian Protocol creates verifiable credit attestations:
+- **For Humans:** AI-powered analysis of financial documents with privacy preservation (planned)
+- **For AI Agents:** On-chain performance metrics and revenue analysis (planned)
+- **Universal:** One protocol serving all forms of intelligence
+
+> We believe credit infrastructure must evolve to serve both human and artificial economic actors as AI agents become autonomous financial entities.
+
+## ✨ Current Features
+
+### 🔗 On-Chain Credit Attestations
+- Separate attestation types for humans and AI agents
+- Credit score storage with expiration timestamps
+- PDA-based account architecture for gas efficiency
+- Framework type tracking for AI agents (ElizaOS, AI16Z, Custom)
+
+### 👥 Dual Entity Support
+- Human credit profiles with employment verification placeholders
+- AI agent profiles with framework type and operational metrics
+- Universal schema supporting both entity types
+
+### 💰 Basic Lending Infrastructure
+- Loan request functionality linked to credit scores
+- Status tracking (Requested, Approved, Funded, Repaid)
+- Foundation for undercollateralized lending protocols
+
+### 🎨 Interactive Frontend
+- Next.js 15 web application
+- Separate user flows for humans and AI agents
+- Wallet integration with Solana Wallet Adapter
+- Demo mode with simulated credit assessments
+
+## 🏗️ Architecture
+
+```
+┌─────────────────┐     ┌──────────────────┐
+│   Human Path    │     │  AI Agent Path   │
+│   (Demo Mode)   │     │  (Demo Mode)     │
+└────────┬────────┘     └────────┬─────────┘
+         │                       │
+         ▼                       ▼
+┌─────────────────────────────────────────┐
+│         Mock Analysis Layer              │
+│     (Development/Demonstration)          │
+└────────────────┬─────────────────────────┘
+                 │
+                 ▼
+┌─────────────────────────────────────────┐
+│    Solana Smart Contracts (Devnet)      │
+│    • Create/Update Attestations         │
+│    • Request Loans                      │
+│    • Close Attestations                 │
+└─────────────────────────────────────────┘
+```
+
+### Planned Architecture
+
+```
+┌─────────────────────────────────────────┐
+│         Credit Analysis Engine           │
+│    • LLM based Document Analysis (Humans)   │
+│    • On-Chain Metrics (AI Agents)       │
+└────────────────┬─────────────────────────┘
+                 │
+                 ▼
+┌─────────────────────────────────────────┐
+│    Solana Attestation Service (SAS)     │
+│         Full CPI Integration            │
+└────────────────┬─────────────────────────┘
+                 │
+                 ▼
+┌─────────────────────────────────────────┐
+│      Undercollateralized Lending        │
+│          Protocol Partners              │
+└─────────────────────────────────────────┘
+```
+
+## 🚀 Getting Started
 
 ### Installation
 
-#### Download the template
-
-```shell
-npx create-solana-dapp@latest -t gh:solana-foundation/templates/gill/obsidian-protocol
+1. Clone the repository:
+```bash
+git clone https://github.com/tenequm/obsidian-protocol
+cd obsidian-protocol
 ```
 
-#### Install Dependencies
-
-```shell
-npm install
+2. Install dependencies:
+```bash
+pnpm install
 ```
 
-## Apps
-
-### anchor
-
-This is a Solana program written in Rust using the Anchor framework.
-
-#### Commands
-
-You can use any normal anchor commands. Either move to the `anchor` directory and run the `anchor` command or prefix the
-command with `npm`, eg: `npm run anchor`.
-
-#### Sync the program id:
-
-Running this command will create a new keypair in the `anchor/target/deploy` directory and save the address to the
-Anchor config file and update the `declare_id!` macro in the `./src/lib.rs` file of the program. This will also update
-the constant in the `anchor/src/counter-exports.ts` file.
-
-```shell
-npm run setup
+3. Set up environment variables:
+```bash
+cp .env.example packages/app/.env.local
 ```
 
-#### Build the program:
-
-```shell
-npm run anchor-build
+4. Build the project:
+```bash
+pnpm run setup
 ```
 
-#### Start the test validator with the program deployed:
+### Development
 
-```shell
-npm run anchor-localnet
+#### Run the web app:
+```bash
+pnpm run dev
 ```
 
-#### Run the tests
+Visit [http://localhost:3000](http://localhost:3000) and add `?dev=true` to the URL for development mode.
 
-```shell
-npm run anchor-test
+#### Build Anchor program:
+```bash
+pnpm run build:anchor
 ```
 
-#### Deploy to Devnet
-
-```shell
-npm run anchor deploy --provider.cluster devnet
+#### Run tests:
+```bash
+pnpm run test
 ```
 
-### web
-
-This is a React app that uses the Anchor generated client to interact with the Solana program.
-
-#### Commands
-
-Start the app
-
-```shell
-npm run dev
+#### Start local validator:
+```bash
+pnpm run localnet
 ```
 
-Build the app
-
-```shell
-npm run build
+#### Deploy to Devnet:
+```bash
+pnpm run deploy:anchor
 ```
+
+## 📁 Project Structure
+
+```
+obsidian-protocol/
+├── packages/
+│   ├── anchor/              # Solana program (Rust/Anchor)
+│   │   ├── programs/        # Smart contracts
+│   │   │   └── obsidianprotocol/
+│   │   │       └── src/
+│   │   │           └── lib.rs       # Main program logic
+│   │   └── tests/           # Program tests
+│   └── app/                 # Next.js frontend
+│       ├── src/
+│       │   ├── app/         # App routes & pages
+│       │   ├── components/  # UI components
+│       │   ├── lib/         # Utilities & test data
+│       │   └── generated/   # TypeScript clients from IDL
+│       └── public/
+├── package.json             # Workspace root
+└── pnpm-workspace.yaml      # pnpm workspace config
+```
+
+## 🛠️ Tech Stack
+
+### Blockchain
+- **Solana** - High-performance blockchain
+- **Anchor 0.30** - Rust framework for Solana programs
+- **Solana Web3.js** - Client-side interactions
+
+### Frontend
+- **Next.js 15** - React framework with App Router
+- **TypeScript** - Type-safe development
+- **Tailwind CSS 4** - Utility-first styling
+- **shadcn/ui** - Component library
+- **Solana Wallet Adapter** - Multi-wallet support
+
+### Development Tools
+- **pnpm** - Fast, efficient package manager
+- **Anchor IDL** - Auto-generated TypeScript types
+- **Vercel** - Frontend deployment
+
+## 🎯 Smart Contract Instructions
+
+### Credit Attestations
+- `create_human_attestation` - Create credit attestation for humans
+- `create_agent_attestation` - Create credit attestation for AI agents
+- `update_human_attestation` - Update existing human attestation
+- `update_agent_attestation` - Update existing agent attestation
+- `close_attestation` - Close attestation and reclaim rent
+
+### Lending
+- `request_loan` - Request loan based on credit score
+
+### Account Types
+- `Attestation` - Stores credit score, entity type, timestamps
+- `LoanAccount` - Tracks loan requests and status
+
+
+## 🧪 Testing
+
+The project includes comprehensive test coverage:
+
+```bash
+# Run all tests
+pnpm run test
+
+# Run app tests only
+pnpm run test:app
+
+# Build everything
+pnpm run build
+```
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🏆 Acknowledgments
+
+Built for the [Colosseum Cypherpunk Hackathon](https://www.colosseum.org/cypherpunk) 2025
+
+Special thanks to:
+- Solana Foundation for the blockchain infrastructure and Attestation Service
+- Colosseum for the hackathon opportunity and support
+- The Solana developer community for tools and guidance
+
+## 📬 Contact
+
+- Website: [obsidian.credit](https://obsidian.credit)
+- Twitter: [@obsidiancredit](https://x.com/obsidiancredit)
+- GitHub: [obsidian-protocol](https://github.com/tenequm/obsidian-protocol)
+
+## ⚠️ Disclaimers
+
+- **Experimental Software**: This is a prototype under active development
+- **Not Audited**: Smart contracts have not undergone security audits
+- **Demo Mode**: Current credit analysis uses simulated data
+- **Devnet Only**: Not deployed to mainnet
+- **No Financial Advice**: This is experimental technology
+
+---
+
+**Built with ❤️ on Solana**
