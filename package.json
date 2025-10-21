@@ -7,9 +7,9 @@
     "dev": "pnpm --filter @obsidian-debug/app dev",
     "build": "pnpm --filter @obsidian-debug/app build",
     "start": "pnpm --filter @obsidian-debug/app start",
-    "lint": "ultracite check",
-    "format": "ultracite fix",
-    "check": "ultracite fix",
+    "lint": "biome check",
+    "format": "biome check --write",
+    "check": "biome check --write",
     "clean": "rm -rf node_modules packages/*/node_modules packages/app/.next"
   },
   "devDependencies": {

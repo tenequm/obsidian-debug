@@ -1,7 +1,6 @@
 "use client";
 
 import { Brain, Bug, TrendingUp, Zap } from "lucide-react";
-import { AppHero } from "@/components/app-hero";
 import { TransactionInput } from "@/components/transaction-input";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -12,10 +11,20 @@ export default function Home() {
 
   return (
     <div className="container mx-auto px-4">
-      <AppHero
-        subtitle="AI-powered error analysis that turns cryptic Solana errors into actionable fixes. 30 minutes → 30 seconds."
-        title="Debug Solana Transactions Instantly"
-      />
+      {/* Hero Section */}
+      <div className="flex flex-row justify-center py-[16px] md:py-[64px]">
+        <div className="text-center">
+          <div className="max-w-2xl">
+            <h1 className="font-bold text-5xl">
+              Debug Solana Transactions Instantly
+            </h1>
+            <p className="pt-4 md:py-6">
+              AI-powered error analysis that turns cryptic Solana errors into
+              actionable fixes. 30 minutes → 30 seconds.
+            </p>
+          </div>
+        </div>
+      </div>
 
       <div className="mx-auto max-w-6xl space-y-12">
         {/* Main Input */}

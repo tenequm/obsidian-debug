@@ -1,16 +1,14 @@
 "use client";
+
 import { Github, Menu, X } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { ClusterDropdown } from "@/components/cluster-dropdown";
-import { ThemeSelect } from "@/components/theme-select";
+import { ObsidianLogo } from "@/components/obsidian-logo";
 import { Button } from "@/components/ui/button";
-import { WalletDropdown } from "@/components/wallet-dropdown";
 
-export function AppHeader({
-  links = [],
+export function Header({
+  links,
 }: {
   links: { label: string; path: string }[];
 }) {
@@ -29,13 +27,7 @@ export function AppHeader({
             className="flex items-center gap-2.5 transition-opacity hover:opacity-90"
             href="/"
           >
-            <Image
-              alt="Obsidian Debug"
-              className="rounded-md"
-              height={28}
-              src="/apple-icon.png"
-              width={28}
-            />
+            <ObsidianLogo className="h-7 w-7" variant="symbol" />
             <span className="hidden font-medium text-lg tracking-tight sm:block">
               Obsidian Debug
             </span>
@@ -66,52 +58,42 @@ export function AppHeader({
         </Button>
 
         <div className="hidden items-center gap-3 md:flex">
-          <WalletDropdown />
-          <ClusterDropdown />
-          <div className="flex items-center gap-2 border-border/40 border-l pl-3">
-            <Button
-              asChild
-              className="h-8 w-8 hover:bg-accent"
-              size="icon"
-              variant="ghost"
+          <Button
+            asChild
+            className="h-8 w-8 hover:bg-accent"
+            size="icon"
+            variant="ghost"
+          >
+            <a
+              aria-label="GitHub Repository"
+              href="https://github.com/tenequm/obsidian-protocol"
+              rel="noopener noreferrer"
+              target="_blank"
             >
-              <a
-                aria-label="GitHub Repository"
-                href="https://github.com/tenequm/obsidian-protocol"
-                rel="noopener noreferrer"
-                target="_blank"
-              >
-                <Github className="h-4 w-4" />
-              </a>
-            </Button>
-            <ThemeSelect />
-          </div>
+              <Github className="h-4 w-4" />
+            </a>
+          </Button>
         </div>
 
         {showMenu && (
-          <div className="fixed inset-x-0 top-[52px] bottom-0 bg-neutral-100/95 backdrop-blur-sm md:hidden dark:bg-neutral-900/95">
-            <div className="flex flex-col gap-4 border-t p-4 dark:border-neutral-800">
+          <div className="fixed inset-x-0 top-[52px] bottom-0 bg-neutral-900/95 backdrop-blur-sm md:hidden">
+            <div className="flex flex-col gap-4 border-neutral-800 border-t p-4">
               <div className="flex items-center justify-end gap-3">
-                <WalletDropdown />
-                <ClusterDropdown />
-                <div className="flex items-center gap-2 border-border/40 border-l pl-3">
-                  <Button
-                    asChild
-                    className="h-8 w-8 hover:bg-accent"
-                    size="icon"
-                    variant="ghost"
+                <Button
+                  asChild
+                  className="h-8 w-8 hover:bg-accent"
+                  size="icon"
+                  variant="ghost"
+                >
+                  <a
+                    aria-label="GitHub Repository"
+                    href="https://github.com/tenequm/obsidian-protocol"
+                    rel="noopener noreferrer"
+                    target="_blank"
                   >
-                    <a
-                      aria-label="GitHub Repository"
-                      href="https://github.com/tenequm/obsidian-protocol"
-                      rel="noopener noreferrer"
-                      target="_blank"
-                    >
-                      <Github className="h-4 w-4" />
-                    </a>
-                  </Button>
-                  <ThemeSelect />
-                </div>
+                    <Github className="h-4 w-4" />
+                  </a>
+                </Button>
               </div>
               <ul className="flex flex-col gap-4">
                 {links.map(({ label, path }) => (

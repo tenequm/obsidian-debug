@@ -1,9 +1,9 @@
+import { Mail, Twitter } from "lucide-react";
 import type { Metadata } from "next";
+import Link from "next/link";
+import { Header } from "@/components/header";
+import { ReactQueryProvider } from "@/components/react-query-provider";
 import "./globals.css";
-import type React from "react";
-import { AppLayout } from "@/components/app-layout";
-import { AppProviders } from "@/components/app-providers";
-import { DevelopmentBanner } from "@/components/development-banner";
 
 export const metadata: Metadata = {
   title: "Obsidian Debug - Solana Transaction Debugger",
@@ -71,35 +71,75 @@ export const metadata: Metadata = {
   },
 };
 
-const links: { label: string; path: string }[] = [
-  { label: "Home", path: "/" },
-  { label: "Debug", path: "/debug" },
-  { label: "About", path: "/about" },
-];
+function Footer() {
+  return (
+    <footer className="border-t bg-card/50">
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex flex-col items-center justify-between space-y-4 md:flex-row md:space-y-0">
+          <div className="text-center md:text-left">
+            <p className="font-semibold text-sm">© 2025 Obsidian Debug</p>
+            <p className="mt-1 text-muted-foreground text-xs">
+              AI-powered Solana transaction debugger
+            </p>
+          </div>
+
+          <div className="flex items-center space-x-6 text-sm">
+            <Link className="transition-colors hover:text-primary" href="/">
+              Home
+            </Link>
+            <a
+              className="flex items-center gap-1 transition-colors hover:text-primary"
+              href="https://x.com/obsidiancredit"
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              <Twitter className="h-3 w-3" />
+              <span className="hidden sm:inline">Twitter</span>
+            </a>
+            <a
+              className="flex items-center gap-1 transition-colors hover:text-primary"
+              href="mailto:hello@obsidian.credit"
+            >
+              <Mail className="h-3 w-3" />
+              <span className="hidden sm:inline">Contact</span>
+            </a>
+          </div>
+
+          <div className="text-center md:text-right">
+            <p className="text-muted-foreground text-xs">
+              Built for{" "}
+              <a
+                className="font-semibold transition-colors hover:text-primary"
+                href="https://www.colosseum.org/cypherpunk"
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                Colosseum Cypherpunk
+              </a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}
 
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const links = [{ label: "Home", path: "/" }];
+
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={"antialiased"}>
-        <AppProviders>
-          <DevelopmentBanner />
-          <AppLayout links={links}>{children}</AppLayout>
-        </AppProviders>
+    <html className="dark" lang="en">
+      <body className="antialiased">
+        <ReactQueryProvider>
+          <div className="dark flex min-h-screen flex-col">
+            <Header links={links} />
+            <main className="container mx-auto grow p-4">{children}</main>
+            <Footer />
+          </div>
+        </ReactQueryProvider>
       </body>
     </html>
   );
 }
-
-// Patch BigInt so we can log it using JSON.stringify without any errors
-declare global {
-  // biome-ignore lint: Global augmentation requires interface
-  interface BigInt {
-    toJSON(): string;
-  }
-}
-
-BigInt.prototype.toJSON = function () {
-  return this.toString();
-};
