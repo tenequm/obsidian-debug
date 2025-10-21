@@ -22,14 +22,8 @@ export function AppHeader({ links = [] }: { links: { label: string; path: string
       <div className="max-w-7xl mx-auto flex justify-between items-center">
         <div className="flex items-center gap-8">
           <Link className="flex items-center gap-2.5 hover:opacity-90 transition-opacity" href="/">
-            <Image
-              src="/apple-icon.png"
-              alt="Obsidian Protocol"
-              width={28}
-              height={28}
-              className="rounded-md"
-            />
-            <span className="text-lg font-medium tracking-tight hidden sm:block">Obsidian Protocol</span>
+            <Image src="/apple-icon.png" alt="Obsidian Debug" width={28} height={28} className="rounded-md" />
+            <span className="text-lg font-medium tracking-tight hidden sm:block">Obsidian Debug</span>
           </Link>
           <div className="hidden md:flex items-center">
             <ul className="flex gap-6 flex-nowrap items-center">
@@ -55,12 +49,7 @@ export function AppHeader({ links = [] }: { links: { label: string; path: string
           <WalletDropdown />
           <ClusterDropdown />
           <div className="flex items-center gap-2 pl-3 border-l border-border/40">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 hover:bg-accent"
-              asChild
-            >
+            <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-accent" asChild>
               <a
                 href="https://github.com/tenequm/obsidian-protocol"
                 target="_blank"
@@ -81,12 +70,7 @@ export function AppHeader({ links = [] }: { links: { label: string; path: string
                 <WalletDropdown />
                 <ClusterDropdown />
                 <div className="flex items-center gap-2 pl-3 border-l border-border/40">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 hover:bg-accent"
-                    asChild
-                  >
+                  <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-accent" asChild>
                     <a
                       href="https://github.com/tenequm/obsidian-protocol"
                       target="_blank"

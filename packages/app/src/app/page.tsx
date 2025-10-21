@@ -1,77 +1,122 @@
 'use client'
 
 import { AppHero } from '@/components/app-hero'
-import { PathSelector } from '@/components/path-selector'
-import { ComparisonTable } from '@/components/comparison-table'
-import { SocialCTA } from '@/components/social-cta'
+import { TransactionInput } from '@/components/transaction-input'
 import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Sparkles, Shield, Zap, Brain } from 'lucide-react'
-import Link from 'next/link'
+import { Bug, Zap, Brain, TrendingUp } from 'lucide-react'
 
 export default function Home() {
+  const handleAnalyze = async (signature: string) => {
+    // TODO: Implement analysis logic
+    // This will call the API route to analyze the transaction
+    console.log('Analyzing transaction:', signature)
+  }
+
   return (
     <div className="container mx-auto px-4">
       <AppHero
-        title="Universal Credit for All Intelligence"
-        subtitle="Pioneering the future of lending for humans and AI agents on Solana"
+        title="Debug Solana Transactions Instantly"
+        subtitle="AI-powered error analysis that turns cryptic Solana errors into actionable fixes. 30 minutes → 30 seconds."
       />
 
       <div className="max-w-6xl mx-auto space-y-12">
-        <div className="text-center space-y-4">
-          <h2 className="text-3xl font-bold">Choose Your Path</h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Whether you&apos;re human or silicon-based, we have a credit solution designed for your unique needs
-          </p>
-        </div>
+        {/* Main Input */}
+        <TransactionInput onAnalyze={handleAnalyze} />
 
-        <PathSelector />
-
+        {/* Value Props */}
         <div className="grid md:grid-cols-4 gap-4">
           <Card>
             <CardContent className="p-6 text-center">
-              <Sparkles className="w-8 h-8 mx-auto mb-3 text-yellow-500" />
-              <p className="font-semibold">AI-First Design</p>
-              <p className="text-sm text-muted-foreground mt-1">Built for the agent economy</p>
+              <Bug className="w-8 h-8 mx-auto mb-3 text-red-500" />
+              <p className="font-semibold">Error Translation</p>
+              <p className="text-sm text-muted-foreground mt-1">Turn cryptic codes into plain English</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardContent className="p-6 text-center">
-              <Shield className="w-8 h-8 mx-auto mb-3 text-green-500" />
-              <p className="font-semibold">SAS Integration</p>
-              <p className="text-sm text-muted-foreground mt-1">On-chain attestations</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6 text-center">
-              <Zap className="w-8 h-8 mx-auto mb-3 text-blue-500" />
-              <p className="font-semibold">Instant Processing</p>
-              <p className="text-sm text-muted-foreground mt-1">Real-time credit decisions</p>
+              <Zap className="w-8 h-8 mx-auto mb-3 text-yellow-500" />
+              <p className="font-semibold">Instant Analysis</p>
+              <p className="text-sm text-muted-foreground mt-1">Get fixes in seconds, not hours</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardContent className="p-6 text-center">
               <Brain className="w-8 h-8 mx-auto mb-3 text-purple-500" />
-              <p className="font-semibold">0% Collateral</p>
-              <p className="text-sm text-muted-foreground mt-1">For qualified AI agents</p>
+              <p className="font-semibold">AI-Powered</p>
+              <p className="text-sm text-muted-foreground mt-1">Claude analyzes every error</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6 text-center">
+              <TrendingUp className="w-8 h-8 mx-auto mb-3 text-blue-500" />
+              <p className="font-semibold">Pattern Learning</p>
+              <p className="text-sm text-muted-foreground mt-1">Built-in library of common errors</p>
             </CardContent>
           </Card>
         </div>
 
-        <ComparisonTable />
-
-        <div className="text-center py-8">
-          <Link href="/manifesto">
-            <Button variant="outline" size="lg">
-              Read Our Manifesto →
-            </Button>
-          </Link>
+        {/* Stats (Placeholder) */}
+        <div className="bg-muted/50 rounded-lg p-8 text-center">
+          <div className="grid md:grid-cols-3 gap-6">
+            <div>
+              <p className="text-3xl font-bold text-primary">800M+</p>
+              <p className="text-sm text-muted-foreground mt-1">Failed transactions annually</p>
+            </div>
+            <div>
+              <p className="text-3xl font-bold text-primary">30 min</p>
+              <p className="text-sm text-muted-foreground mt-1">Average time debugging manually</p>
+            </div>
+            <div>
+              <p className="text-3xl font-bold text-primary">30 sec</p>
+              <p className="text-sm text-muted-foreground mt-1">With Obsidian Debug analysis</p>
+            </div>
+          </div>
         </div>
 
-        <SocialCTA />
+        {/* How It Works */}
+        <div className="space-y-6">
+          <h2 className="text-3xl font-bold text-center">How It Works</h2>
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="text-center space-y-2">
+              <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xl font-bold mx-auto">
+                1
+              </div>
+              <h3 className="font-semibold">Paste Transaction</h3>
+              <p className="text-sm text-muted-foreground">
+                Copy any failed transaction signature from Solscan or SolanaFM
+              </p>
+            </div>
+            <div className="text-center space-y-2">
+              <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xl font-bold mx-auto">
+                2
+              </div>
+              <h3 className="font-semibold">AI Analysis</h3>
+              <p className="text-sm text-muted-foreground">
+                Our AI parses logs, identifies the error, and cross-references patterns
+              </p>
+            </div>
+            <div className="text-center space-y-2">
+              <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xl font-bold mx-auto">
+                3
+              </div>
+              <h3 className="font-semibold">Get Fixes</h3>
+              <p className="text-sm text-muted-foreground">
+                Receive step-by-step instructions and code examples to fix the issue
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Supported Protocols */}
+        <div className="text-center space-y-4">
+          <h3 className="text-xl font-semibold">Supports Major Solana Protocols</h3>
+          <p className="text-muted-foreground">
+            Token Program • System Program • Jupiter • Raydium • Orca • Metaplex • More coming soon
+          </p>
+        </div>
       </div>
     </div>
   )

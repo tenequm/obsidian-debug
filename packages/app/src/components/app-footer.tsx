@@ -8,9 +8,7 @@ export function AppFooter() {
         <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
           <div className="text-center md:text-left">
             <p className="font-semibold text-sm">© 2025 Obsidian Protocol</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              Universal Credit for All Intelligence
-            </p>
+            <p className="text-xs text-muted-foreground mt-1">Universal Credit for All Intelligence</p>
           </div>
 
           <div className="flex items-center space-x-6 text-sm">

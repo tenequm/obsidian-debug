@@ -6,24 +6,36 @@ import { DevelopmentBanner } from '@/components/development-banner'
 import React from 'react'
 
 export const metadata: Metadata = {
-  title: 'Obsidian Protocol - Universal Credit for All Intelligence',
-  description: 'Pioneering the future of lending for humans and AI agents on Solana. The first credit infrastructure for both human and artificial intelligence.',
-  keywords: ['Solana', 'DeFi', 'AI agents', 'credit', 'lending', 'blockchain', 'Obsidian Protocol', 'universal credit', 'AI lending', 'Colosseum Cypherpunk'],
-  authors: [{ name: 'Obsidian Protocol Team' }],
-  creator: 'Obsidian Protocol',
-  publisher: 'Obsidian Protocol',
+  title: 'Obsidian Debug - Solana Transaction Debugger',
+  description:
+    'AI-powered transaction error analysis for Solana developers. Turn cryptic errors into instant fixes. Debug failed transactions in seconds, not hours.',
+  keywords: [
+    'Solana',
+    'debugger',
+    'transaction errors',
+    'developer tools',
+    'Obsidian Debug',
+    'Solana debugging',
+    'transaction analysis',
+    'error analysis',
+    'Colosseum Cypherpunk',
+  ],
+  authors: [{ name: 'Obsidian Debug Team' }],
+  creator: 'Obsidian Debug',
+  publisher: 'Obsidian Debug',
   metadataBase: new URL('https://obsidian.credit'),
   openGraph: {
-    title: 'Obsidian Protocol - Universal Credit for All Intelligence',
-    description: 'The first credit infrastructure for both humans and AI agents on Solana. 0% collateral for qualified AI agents.',
+    title: 'Obsidian Debug - Solana Transaction Debugger',
+    description:
+      'AI-powered transaction error analysis. Instantly understand why Solana transactions fail and get actionable fixes.',
     url: 'https://obsidian.credit',
-    siteName: 'Obsidian Protocol',
+    siteName: 'Obsidian Debug',
     images: [
       {
         url: '/opengraph-image',
         width: 1200,
         height: 630,
-        alt: 'Obsidian Protocol - Universal Credit Infrastructure',
+        alt: 'Obsidian Debug - Solana Transaction Debugger',
       },
     ],
     locale: 'en_US',
@@ -31,8 +43,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Obsidian Protocol - Universal Credit for All Intelligence',
-    description: 'The first credit infrastructure for both humans and AI agents on Solana.',
+    title: 'Obsidian Debug - Solana Transaction Debugger',
+    description: 'AI-powered transaction error analysis for Solana developers. 30 minutes → 30 seconds.',
     creator: '@obsidiancredit',
     site: '@obsidiancredit',
     images: ['/twitter-image'],
@@ -52,7 +64,7 @@ export const metadata: Metadata = {
     canonical: 'https://obsidian.credit',
   },
   appleWebApp: {
-    title: 'Obsidian',
+    title: 'Obsidian Debug',
     capable: true,
     statusBarStyle: 'default',
   },
@@ -60,10 +72,8 @@ export const metadata: Metadata = {
 
 const links: { label: string; path: string }[] = [
   { label: 'Home', path: '/' },
-  { label: 'Human Credit', path: '/human' },
-  { label: 'Agent Credit', path: '/agent' },
-  { label: 'Manifesto', path: '/manifesto' },
-  { label: 'Account', path: '/account' },
+  { label: 'Debug', path: '/debug' },
+  { label: 'About', path: '/about' },
 ]
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
