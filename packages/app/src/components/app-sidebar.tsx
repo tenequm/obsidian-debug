@@ -19,8 +19,8 @@ import {
 
 const navItems = [
   {
-    title: "Debug",
-    url: "/debug",
+    title: "Home",
+    url: "/",
     icon: Bug,
   },
   {
