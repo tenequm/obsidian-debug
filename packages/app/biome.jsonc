@@ -30,12 +30,28 @@
       }
     },
     {
-      // Shadcn UI components use namespace imports (Radix UI pattern)
-      "includes": ["**/components/ui/**/*.{ts,tsx}"],
+      // Shadcn UI components use namespace imports and patterns that don't conform to strict linting
+      "includes": ["**/components/ui/**/*.{ts,tsx}", "**/hooks/use-mobile.ts"],
       "linter": {
         "rules": {
           "performance": {
             "noNamespaceImport": "off"
+          },
+          "style": {
+            "noMagicNumbers": "off"
+          },
+          "nursery": {
+            "noShadow": "off"
+          },
+          "suspicious": {
+            "noDocumentCookie": "off"
+          },
+          "correctness": {
+            "useExhaustiveDependencies": "warn"
+          },
+          "a11y": {
+            "useFocusableInteractive": "off",
+            "useSemanticElements": "off"
           }
         }
       }
