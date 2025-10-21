@@ -1,52 +1,69 @@
-'use client'
+"use client";
 
+import {
+  ellipsify,
+  type UiWallet,
+  useWalletUi,
+  useWalletUiWallet,
+} from "@wallet-ui/react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import * as React from 'react'
-import { ellipsify, UiWallet, useWalletUi, useWalletUiWallet } from '@wallet-ui/react'
-import { Button } from '@/components/ui/button'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { cn } from '@/lib/utils'
+} from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
 
-function WalletAvatar({ className, wallet }: { className?: string; wallet: UiWallet }) {
+function WalletAvatar({
+  className,
+  wallet,
+}: {
+  className?: string;
+  wallet: UiWallet;
+}) {
   return (
-    <Avatar className={cn('rounded-md h-6 w-6', className)}>
-      <AvatarImage src={wallet.icon} alt={wallet.name} />
+    <Avatar className={cn("h-6 w-6 rounded-md", className)}>
+      <AvatarImage alt={wallet.name} src={wallet.icon} />
       <AvatarFallback>{wallet.name[0]}</AvatarFallback>
     </Avatar>
-  )
+  );
 }
 
 function WalletDropdownItem({ wallet }: { wallet: UiWallet }) {
-  const { connect } = useWalletUiWallet({ wallet })
+  const { connect } = useWalletUiWallet({ wallet });
 
   return (
     <DropdownMenuItem
       className="cursor-pointer"
       key={wallet.name}
-      onClick={() => {
-        return connect()
-      }}
+      onClick={() => connect()}
     >
       {wallet.icon ? <WalletAvatar wallet={wallet} /> : null}
       {wallet.name}
     </DropdownMenuItem>
-  )
+  );
 }
 
 function WalletDropdown() {
-  const { account, connected, copy, disconnect, wallet, wallets } = useWalletUi()
+  const { account, connected, copy, disconnect, wallet, wallets } =
+    useWalletUi();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="cursor-pointer">
+        <Button className="cursor-pointer" variant="outline">
           {wallet?.icon ? <WalletAvatar wallet={wallet} /> : null}
-          {connected ? (account ? ellipsify(account.address) : wallet?.name) : 'Select Wallet'}
+          {(() => {
+            if (!connected) {
+              return "Select Wallet";
+            }
+            if (account) {
+              return ellipsify(account.address);
+            }
+            return wallet?.name;
+          })()}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
@@ -62,17 +79,21 @@ function WalletDropdown() {
           </>
         ) : null}
         {wallets.length ? (
-          wallets.map((wallet) => <WalletDropdownItem key={wallet.name} wallet={wallet} />)
+          wallets.map((w) => <WalletDropdownItem key={w.name} wallet={w} />)
         ) : (
-          <DropdownMenuItem className="cursor-pointer" asChild>
-            <a href="https://solana.com/solana-wallets" target="_blank" rel="noopener noreferrer">
+          <DropdownMenuItem asChild className="cursor-pointer">
+            <a
+              href="https://solana.com/solana-wallets"
+              rel="noopener noreferrer"
+              target="_blank"
+            >
               Get a Solana wallet to connect.
             </a>
           </DropdownMenuItem>
         )}
       </DropdownMenuContent>
     </DropdownMenu>
-  )
+  );
 }
 
-export { WalletDropdown }
+export { WalletDropdown };

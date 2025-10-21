@@ -1,0 +1,44 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.2.6/schema.json",
+  "extends": "//",
+  "overrides": [
+    {
+      // Tailwind CSS 4.1 at-rules support
+      "includes": ["**/*.css"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noUnknownAtRules": "off"
+          }
+        }
+      }
+    },
+    {
+      // Next.js OG Image generation files
+      "includes": [
+        "**/opengraph-image.*",
+        "**/twitter-image.*",
+        "**/icon.*",
+        "**/apple-icon.*"
+      ],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "useAwait": "off"
+          }
+        }
+      }
+    },
+    {
+      // Shadcn UI components use namespace imports (Radix UI pattern)
+      "includes": ["**/components/ui/**/*.{ts,tsx}"],
+      "linter": {
+        "rules": {
+          "performance": {
+            "noNamespaceImport": "off"
+          }
+        }
+      }
+    }
+  ]
+}

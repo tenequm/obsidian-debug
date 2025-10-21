@@ -47,4 +47,5 @@ next-env.d.ts
 test-ledger
 **/*.rs.bk
 
+.claude/settings.local.json
 tmp

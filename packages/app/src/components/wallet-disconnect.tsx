@@ -1,16 +1,22 @@
-'use client'
+"use client";
 
-import * as React from 'react'
-import { useWalletUi } from '@wallet-ui/react'
-import { Button } from '@/components/ui/button'
+import { useWalletUi } from "@wallet-ui/react";
+import type * as React from "react";
+import { Button } from "@/components/ui/button";
 
 function WalletDisconnect(props: React.ComponentProps<typeof Button>) {
-  const { connected, disconnect } = useWalletUi()
+  const { connected, disconnect } = useWalletUi();
   return (
-    <Button variant="outline" className="cursor-pointer" {...props} onClick={disconnect} disabled={!connected}>
+    <Button
+      className="cursor-pointer"
+      variant="outline"
+      {...props}
+      disabled={!connected}
+      onClick={disconnect}
+    >
       Disconnect
     </Button>
-  )
+  );
 }
 
-export { WalletDisconnect }
+export { WalletDisconnect };

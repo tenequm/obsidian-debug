@@ -1,6 +1,6 @@
-@import 'tailwindcss';
-@import 'tw-animate-css';
-@import '@wallet-ui/react/index.css';
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "@wallet-ui/react/index.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -121,7 +121,7 @@
   }
 
   button:not(:disabled),
-  [role='button']:not(:disabled) {
+  [role="button"]:not(:disabled) {
     cursor: pointer;
   }
 }

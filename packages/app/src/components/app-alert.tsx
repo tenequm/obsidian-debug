@@ -1,21 +1,21 @@
-import { AlertCircle } from 'lucide-react'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { ReactNode } from 'react'
+import { AlertCircle } from "lucide-react";
+import type { ReactNode } from "react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export function AppAlert({
   action = null,
   children,
-  className = '',
+  className = "",
 }: {
-  action?: ReactNode
-  children: ReactNode
-  className?: string
+  action?: ReactNode;
+  children: ReactNode;
+  className?: string;
 }) {
   return (
-    <Alert variant="warning" className={className}>
+    <Alert className={className} variant="warning">
       <AlertCircle className="h-4 w-4" />
       <AlertTitle>{children}</AlertTitle>
       <AlertDescription className="flex justify-end">{action}</AlertDescription>
     </Alert>
-  )
+  );
 }

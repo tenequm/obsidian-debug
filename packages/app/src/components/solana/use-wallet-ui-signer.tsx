@@ -1,8 +1,14 @@
-import { UiWalletAccount, useWalletAccountTransactionSendingSigner } from '@wallet-ui/react'
-import { useSolana } from '@/components/solana/use-solana'
+import {
+  type UiWalletAccount,
+  useWalletAccountTransactionSendingSigner,
+} from "@wallet-ui/react";
+import { useSolana } from "@/components/solana/use-solana";
 
 export function useWalletUiSigner() {
-  const { account, cluster } = useSolana()
+  const { account, cluster } = useSolana();
 
-  return useWalletAccountTransactionSendingSigner(account as UiWalletAccount, cluster.id)
+  return useWalletAccountTransactionSendingSigner(
+    account as UiWalletAccount,
+    cluster.id
+  );
 }

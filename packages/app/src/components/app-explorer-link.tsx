@@ -1,25 +1,25 @@
-import { getExplorerLink, GetExplorerLinkArgs } from 'gill'
-import { useSolana } from '@/components/solana/use-solana'
-import { ArrowUpRightFromSquare } from 'lucide-react'
+import { type GetExplorerLinkArgs, getExplorerLink } from "gill";
+import { ArrowUpRightFromSquare } from "lucide-react";
+import { useSolana } from "@/components/solana/use-solana";
 
 export function AppExplorerLink({
   className,
-  label = '',
+  label = "",
   ...link
 }: GetExplorerLinkArgs & {
-  className?: string
-  label: string
+  className?: string;
+  label: string;
 }) {
-  const { cluster } = useSolana()
+  const { cluster } = useSolana();
   return (
     <a
+      className={className ? className : "link inline-flex gap-1 font-mono"}
       href={getExplorerLink({ ...link, cluster: cluster.cluster })}
-      target="_blank"
       rel="noopener noreferrer"
-      className={className ? className : `link font-mono inline-flex gap-1`}
+      target="_blank"
     >
       {label}
       <ArrowUpRightFromSquare size={12} />
     </a>
-  )
+  );
 }
