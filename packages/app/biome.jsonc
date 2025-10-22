@@ -31,27 +31,44 @@
     },
     {
       // Shadcn UI components use namespace imports and patterns that don't conform to strict linting
-      "includes": ["**/components/ui/**/*.{ts,tsx}", "**/hooks/use-mobile.ts"],
+      "includes": [
+        "**/components/ui/**/*.{ts,tsx}",
+        "**/components/ai-elements/**/*.{ts,tsx}",
+        "**/hooks/use-mobile.ts"
+      ],
       "linter": {
         "rules": {
           "performance": {
-            "noNamespaceImport": "off"
+            "noNamespaceImport": "off",
+            "noImgElement": "off"
+          },
+          "complexity": {
+            "noExcessiveCognitiveComplexity": "off",
+            "useOptionalChain": "off"
           },
           "style": {
-            "noMagicNumbers": "off"
+            "noMagicNumbers": "off",
+            "useBlockStatements": "off"
           },
           "nursery": {
-            "noShadow": "off"
+            "noShadow": "off",
+            "useConsistentTypeDefinitions": "off"
           },
           "suspicious": {
-            "noDocumentCookie": "off"
+            "noDocumentCookie": "off",
+            "noExplicitAny": "off",
+            "noEmptyBlockStatements": "off"
           },
           "correctness": {
-            "useExhaustiveDependencies": "warn"
+            "useExhaustiveDependencies": "warn",
+            "noUnusedVariables": "off"
           },
           "a11y": {
             "useFocusableInteractive": "off",
-            "useSemanticElements": "off"
+            "useSemanticElements": "off",
+            "noNoninteractiveTabindex": "off",
+            "useKeyWithClickEvents": "off",
+            "noNoninteractiveElementInteractions": "off"
           }
         }
       }

@@ -1,6 +1,41 @@
 "use client";
 
-import { TransactionInput } from "@/components/transaction-input";
+import { useChat } from "@ai-sdk/react";
+import type { ToolUIPart } from "ai";
+import { Bot } from "lucide-react";
+import type { FormEvent } from "react";
+import {
+  Conversation,
+  ConversationContent,
+  ConversationScrollButton,
+} from "@/components/ai-elements/conversation";
+import { Loader } from "@/components/ai-elements/loader";
+import {
+  Message,
+  MessageAvatar,
+  MessageContent,
+} from "@/components/ai-elements/message";
+import {
+  PromptInput,
+  PromptInputBody,
+  type PromptInputMessage,
+  PromptInputSubmit,
+  PromptInputTextarea,
+  PromptInputTools,
+} from "@/components/ai-elements/prompt-input";
+import {
+  Reasoning,
+  ReasoningContent,
+  ReasoningTrigger,
+} from "@/components/ai-elements/reasoning";
+import { Response } from "@/components/ai-elements/response";
+import {
+  Tool,
+  ToolContent,
+  ToolHeader,
+  ToolInput,
+  ToolOutput,
+} from "@/components/ai-elements/tool";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -11,9 +46,19 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 
 export default function DebugPage() {
-  const handleAnalyze = async () => {
-    // This will call the API route to analyze the transaction
+  const { messages, status, sendMessage } = useChat();
+
+  const handleSubmit = (
+    message: PromptInputMessage,
+    e: FormEvent<HTMLFormElement>
+  ) => {
+    e.preventDefault();
+    if (message.text?.trim()) {
+      sendMessage({ text: message.text });
+    }
   };
+
+  const isLoading = status === "streaming" || status === "submitted";
 
   return (
     <>
@@ -27,32 +72,116 @@ export default function DebugPage() {
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
-                <BreadcrumbPage>Home</BreadcrumbPage>
+                <BreadcrumbPage>Chat with Claude</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
         </div>
       </header>
-      <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-        <div className="container mx-auto px-4">
-          {/* Hero Section */}
-          <div className="flex flex-row justify-center py-[16px] md:py-[64px]">
-            <div className="text-center">
-              <div className="max-w-2xl">
-                <h1 className="font-bold text-5xl">
-                  Debug Solana Transactions Instantly
-                </h1>
-                <p className="pt-4 md:py-6">
-                  AI-powered error analysis that turns cryptic Solana errors
-                  into actionable fixes. 30 minutes → 30 seconds.
-                </p>
-              </div>
-            </div>
-          </div>
 
-          <div className="mx-auto max-w-6xl space-y-12">
-            {/* Main Input */}
-            <TransactionInput onAnalyze={handleAnalyze} />
+      <div className="relative flex flex-1 flex-col divide-y">
+        <Conversation>
+          <ConversationContent className="mx-auto w-full max-w-3xl p-4">
+            {messages.length === 0 ? (
+              <div className="flex min-h-[60vh] items-center justify-center">
+                <div className="space-y-4 px-4 text-center">
+                  <Bot className="mx-auto h-12 w-12 text-muted-foreground" />
+                  <div className="space-y-2">
+                    <h2 className="font-semibold text-xl">
+                      Chat with Claude Haiku 4.5
+                    </h2>
+                    <p className="text-muted-foreground">
+                      Start a conversation by typing a message below
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              messages.map((message) => (
+                <Message from={message.role} key={message.id}>
+                  <MessageAvatar
+                    name={message.role === "user" ? "You" : "Claude"}
+                    src=""
+                  />
+                  <MessageContent>
+                    {message.parts.map((part, partIndex) => {
+                      if (part.type === "text") {
+                        return (
+                          <Response key={`${message.id}-text-${partIndex}`}>
+                            {part.text}
+                          </Response>
+                        );
+                      }
+
+                      if (part.type === "reasoning") {
+                        return (
+                          <Reasoning
+                            isStreaming={isLoading}
+                            key={`${message.id}-reasoning-${partIndex}`}
+                          >
+                            <ReasoningTrigger />
+                            <ReasoningContent>{part.text}</ReasoningContent>
+                          </Reasoning>
+                        );
+                      }
+
+                      if (part.type.startsWith("tool-")) {
+                        const toolPart = part as ToolUIPart;
+                        return (
+                          <Tool
+                            defaultOpen={false}
+                            key={`${message.id}-tool-${partIndex}`}
+                          >
+                            <ToolHeader
+                              state={toolPart.state}
+                              type={toolPart.type}
+                            />
+                            <ToolContent>
+                              {toolPart.input != null && (
+                                <ToolInput input={toolPart.input} />
+                              )}
+                              {(toolPart.state === "output-available" ||
+                                toolPart.state === "output-error") && (
+                                <ToolOutput
+                                  errorText={
+                                    toolPart.errorText as string | undefined
+                                  }
+                                  output={toolPart.output}
+                                />
+                              )}
+                            </ToolContent>
+                          </Tool>
+                        );
+                      }
+
+                      return null;
+                    })}
+                  </MessageContent>
+                </Message>
+              ))
+            )}
+            {isLoading && (
+              <Message from="assistant">
+                <MessageAvatar src="" name="Claude" />
+                <MessageContent>
+                  <Loader />
+                </MessageContent>
+              </Message>
+            )}
+          </ConversationContent>
+          <ConversationScrollButton />
+        </Conversation>
+
+        <div className="shrink-0">
+          <div className="mx-auto w-full max-w-3xl p-4">
+            <PromptInput onSubmit={handleSubmit}>
+              <PromptInputBody>
+                <PromptInputTextarea placeholder="Ask Claude anything..." />
+              </PromptInputBody>
+              <PromptInputTools>
+                <PromptInputSubmit status={status} />
+              </PromptInputTools>
+            </PromptInput>
           </div>
         </div>
       </div>
