@@ -162,7 +162,7 @@ export default function DebugPage() {
             )}
             {isLoading && (
               <Message from="assistant">
-                <MessageAvatar src="" name="Claude" />
+                <MessageAvatar name="Claude" src="" />
                 <MessageContent>
                   <Loader />
                 </MessageContent>
