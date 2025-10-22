@@ -17,7 +17,7 @@ import {
 } from "@/components/ai-elements/message";
 import {
   PromptInput,
-  PromptInputBody,
+  PromptInputFooter,
   type PromptInputMessage,
   PromptInputSubmit,
   PromptInputTextarea,
@@ -79,9 +79,9 @@ export default function DebugPage() {
         </div>
       </header>
 
-      <div className="relative flex flex-1 flex-col divide-y">
+      <div className="relative flex size-full flex-col divide-y overflow-hidden">
         <Conversation>
-          <ConversationContent className="mx-auto w-full max-w-3xl p-4">
+          <ConversationContent className="mx-auto w-full max-w-4xl p-4">
             {messages.length === 0 ? (
               <div className="flex min-h-[60vh] items-center justify-center">
                 <div className="space-y-4 px-4 text-center">
@@ -173,14 +173,15 @@ export default function DebugPage() {
         </Conversation>
 
         <div className="shrink-0">
-          <div className="mx-auto w-full max-w-3xl p-4">
+          <div className="mx-auto w-full max-w-4xl p-4">
             <PromptInput onSubmit={handleSubmit}>
-              <PromptInputBody>
-                <PromptInputTextarea placeholder="Ask Claude anything..." />
-              </PromptInputBody>
-              <PromptInputTools>
+              <PromptInputTextarea />
+              <PromptInputFooter>
+                <PromptInputTools>
+                  {/* Future: Add action buttons here */}
+                </PromptInputTools>
                 <PromptInputSubmit status={status} />
-              </PromptInputTools>
+              </PromptInputFooter>
             </PromptInput>
           </div>
         </div>
