@@ -4,18 +4,18 @@
   "private": true,
   "description": "AI-powered Solana transaction debugger",
   "scripts": {
-    "dev": "pnpm --filter @obsidian-debug/app dev",
-    "build": "pnpm --filter @obsidian-debug/app build",
-    "start": "pnpm --filter @obsidian-debug/app start",
+    "dev": "turbo dev --log-prefix=none",
+    "build": "turbo build",
     "lint": "biome check",
     "format": "biome check --write",
-    "check": "biome check --write && pnpm --filter @obsidian-debug/app type-check",
+    "check": "turbo check",
     "type-check": "tsc --noEmit",
     "clean": "rm -rf node_modules packages/*/node_modules packages/app/.next"
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.6",
     "husky": "^9.1.7",
+    "turbo": "^2.5.8",
     "ultracite": "5.6.4"
   },
   "packageManager": "pnpm@10.19.0"

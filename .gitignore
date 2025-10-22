@@ -49,3 +49,8 @@ test-ledger
 
 .claude/settings.local.json
 tmp
+
+# logs
+logs/
+*.log
+.turbo
