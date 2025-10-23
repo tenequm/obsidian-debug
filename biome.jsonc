@@ -6,6 +6,9 @@
     "rules": {
       "suspicious": {
         "noConsole": "off"
+      },
+      "style": {
+        "noMagicNumbers": "off"
       }
     }
   },
@@ -16,9 +19,6 @@
         "rules": {
           "performance": {
             "useTopLevelRegex": "off"
-          },
-          "style": {
-            "noMagicNumbers": "off"
           }
         }
       }
