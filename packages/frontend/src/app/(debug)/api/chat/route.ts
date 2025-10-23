@@ -1,17 +1,12 @@
 import { anthropic } from "@ai-sdk/anthropic";
-import { Connection } from "@solana/web3.js";
 import type { TextUIPart, UIMessage } from "ai";
 import { convertToModelMessages, streamText } from "ai";
+import { Helius } from "helius-sdk";
 import { env } from "@/env";
 import { isValidSignature } from "@/lib/solana/utils";
+import { parseTransaction } from "@/lib/xray";
 
 export const maxDuration = 60;
-
-// Create Solana connection
-const connection = new Connection(
-  `https://mainnet.helius-rpc.com/?api-key=${env.HELIUS_API_KEY}`,
-  "confirmed"
-);
 
 // Constants
 const WHITESPACE_REGEX = /\s+/;
@@ -42,21 +37,22 @@ Keep this section under 150 words.
 
 ## Analysis Instructions
 
-Extract and calculate:
-1. **Error location:** Which instruction index failed, which program
-2. **Token amounts:** Compare pre/post balances, find transfers in innerInstructions
+You'll receive enriched transaction data with categorized actions, balance changes, and error details. Extract and calculate:
+
+1. **Error location:** Which instruction failed, which program
+2. **Token amounts:** Compare sent vs received, look for transfer amounts and balance changes
 3. **Deviations:** Calculate shortfalls or slippage percentages
-4. **Root cause:** Map error code → likely meaning based on context
+4. **Root cause:** Map error code → likely meaning based on transaction context
 
 ## Common Error Patterns
 
 **Custom error 0x0 in swap routers:**
-- Likely slippage protection
+- Likely slippage protection triggered
 - Compare token transfer amounts to find expected vs actual
 - Recommend specific slippage % (0.5-1% for volatile, 0.1-0.3% for stable)
 
 **InsufficientFunds errors:**
-- Calculate exact shortfall from pre/post balances
+- Calculate exact shortfall from balance changes
 - Show: "Need X more SOL (have Y, need Z)"
 
 **AccountNotFound errors:**
@@ -136,40 +132,57 @@ export async function POST(request: Request) {
       console.log(`[Transaction Debug] Detected signature: ${signature}`);
 
       try {
-        const tx = await connection.getParsedTransaction(signature, {
-          maxSupportedTransactionVersion: 0,
-          commitment: "confirmed",
+        // Fetch enriched transaction using Helius SDK
+        const helius = new Helius(env.HELIUS_API_KEY);
+        const [enrichedTx] = await helius.parseTransactions({
+          transactions: [signature],
         });
 
-        if (tx) {
+        if (enrichedTx) {
           console.log(
-            "[Transaction Debug] Fetched transaction:",
-            tx.meta?.err ? "Failed" : "Success"
+            "[Transaction Debug] Fetched enriched transaction:",
+            enrichedTx.type || "UNKNOWN"
           );
 
+          // Parse transaction with xray to get structured ProtonTransaction
+          const parsedTx = parseTransaction(enrichedTx, undefined);
+
+          console.log(
+            "[Transaction Debug] Parsed transaction:",
+            parsedTx.type,
+            "with",
+            parsedTx.actions.length,
+            "actions"
+          );
+
+          // Create comprehensive transaction summary for Claude
           const txSummary = {
-            signature,
-            error: {
-              type: JSON.stringify(tx.meta?.err),
-              object: tx.meta?.err,
-            },
-            innerInstructions: tx.meta?.innerInstructions,
-            logs: tx.meta?.logMessages,
-            balanceChange: {
-              pre: tx.meta?.preBalances,
-              post: tx.meta?.postBalances,
-              fee: tx.meta?.fee,
-            },
-            tokens: {
-              pre: tx.meta?.preTokenBalances,
-              post: tx.meta?.postTokenBalances,
-            },
+            signature: parsedTx.signature,
+            type: parsedTx.type,
+            timestamp: parsedTx.timestamp,
+            fee: parsedTx.fee,
+            source: parsedTx.source,
+            primaryUser: parsedTx.primaryUser,
+
+            // Structured actions (what happened)
+            actions: parsedTx.actions,
+
+            // Account-level changes (who was affected)
+            accounts: parsedTx.accounts,
+
+            // Raw enriched data for reference
+            error: enrichedTx.transactionError || null,
+            tokenTransfers: enrichedTx.tokenTransfers || [],
+            nativeTransfers: enrichedTx.nativeTransfers || [],
+            accountData: enrichedTx.accountData || [],
+            events: enrichedTx.events,
+            instructions: enrichedTx.instructions,
           };
 
-          // Add complete transaction data as JSON for systematic analysis
+          // Add structured transaction data for Claude
           systemMessages.push({
             role: "system",
-            content: `=== TRANSACTION DATA ===
+            content: `=== PARSED TRANSACTION DATA ===
 
 ${JSON.stringify(txSummary, null, 2)}
 
@@ -177,7 +190,7 @@ ${JSON.stringify(txSummary, null, 2)}
           });
 
           console.log(
-            "[Transaction Debug] Added full transaction JSON to system messages"
+            "[Transaction Debug] Added parsed transaction to system messages"
           );
         } else {
           console.log("[Transaction Debug] Transaction not found");

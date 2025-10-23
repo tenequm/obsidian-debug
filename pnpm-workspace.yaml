@@ -2,6 +2,7 @@ packages:
   - packages/*
 
 onlyBuiltDependencies:
+  - bigint-buffer
   - bufferutil
   - esbuild
   - sharp

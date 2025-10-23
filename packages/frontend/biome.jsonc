@@ -16,6 +16,43 @@
       }
     },
     {
+      "includes": ["**/xray/**/*"],
+      "linter": {
+        "rules": {
+          "nursery": {
+            "noShadow": "off",
+            "useMaxParams": "off",
+            "useConsistentTypeDefinitions": "off"
+          },
+          "style": {
+            "noMagicNumbers": "off",
+            "noEnum": "off",
+            "useBlockStatements": "off",
+            "useForOf": "off",
+            "noNonNullAssertion": "off"
+          },
+          "complexity": {
+            "noExcessiveCognitiveComplexity": "off",
+            "noForEach": "off"
+          },
+          "correctness": {
+            "noUnusedVariables": "off",
+            "useParseIntRadix": "off",
+            "noUnusedFunctionParameters": "off"
+          },
+          "performance": {
+            "noNamespaceImport": "off",
+            "noBarrelFile": "off"
+          },
+          "suspicious": {
+            "noExplicitAny": "off",
+            "noEvolvingTypes": "off",
+            "noImplicitAnyLet": "off"
+          }
+        }
+      }
+    },
+    {
       // Tailwind CSS 4.1 at-rules support
       "includes": ["**/*.css"],
       "linter": {

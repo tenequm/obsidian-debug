@@ -9,7 +9,7 @@
     "lint": "biome check",
     "format": "biome check --write",
     "check": "biome check --write",
-    "type-check": "tsc --noEmit",
+    "type-check": "turbo type-check",
     "clean": "rm -rf node_modules packages/*/node_modules packages/app/.next"
   },
   "devDependencies": {
