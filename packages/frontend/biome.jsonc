@@ -1,0 +1,128 @@
+{
+  "$schema": "../../node_modules/@biomejs/biome/configuration_schema.json",
+  "extends": "//",
+  "overrides": [
+    {
+      "includes": ["tests/**/*.ts", "tests/**/*.tsx"],
+      "linter": {
+        "rules": {
+          "performance": {
+            "noNamespaceImport": "off"
+          },
+          "suspicious": {
+            "noSkippedTests": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["**/xray/**/*"],
+      "linter": {
+        "rules": {
+          "nursery": {
+            "noShadow": "off",
+            "useMaxParams": "off",
+            "useConsistentTypeDefinitions": "off"
+          },
+          "style": {
+            "noMagicNumbers": "off",
+            "noEnum": "off",
+            "useBlockStatements": "off",
+            "useForOf": "off",
+            "noNonNullAssertion": "off"
+          },
+          "complexity": {
+            "noExcessiveCognitiveComplexity": "off",
+            "noForEach": "off"
+          },
+          "correctness": {
+            "noUnusedVariables": "off",
+            "useParseIntRadix": "off",
+            "noUnusedFunctionParameters": "off"
+          },
+          "performance": {
+            "noNamespaceImport": "off",
+            "noBarrelFile": "off"
+          },
+          "suspicious": {
+            "noExplicitAny": "off",
+            "noEvolvingTypes": "off",
+            "noImplicitAnyLet": "off"
+          }
+        }
+      }
+    },
+    {
+      // Tailwind CSS 4.1 at-rules support
+      "includes": ["**/*.css"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noUnknownAtRules": "off"
+          }
+        }
+      }
+    },
+    {
+      // Next.js OG Image generation files
+      "includes": [
+        "**/opengraph-image.*",
+        "**/twitter-image.*",
+        "**/icon.*",
+        "**/apple-icon.*"
+      ],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "useAwait": "off"
+          }
+        }
+      }
+    },
+    {
+      // Shadcn UI components use namespace imports and patterns that don't conform to strict linting
+      "includes": [
+        "**/components/ui/**/*.{ts,tsx}",
+        "**/components/ai-elements/**/*.{ts,tsx}",
+        "**/hooks/use-mobile.ts"
+      ],
+      "linter": {
+        "rules": {
+          "performance": {
+            "noNamespaceImport": "off",
+            "noImgElement": "off"
+          },
+          "complexity": {
+            "noExcessiveCognitiveComplexity": "off",
+            "useOptionalChain": "off"
+          },
+          "style": {
+            "noMagicNumbers": "off",
+            "useBlockStatements": "off"
+          },
+          "nursery": {
+            "noShadow": "off",
+            "useConsistentTypeDefinitions": "off",
+            "noDeprecatedImports": "off"
+          },
+          "suspicious": {
+            "noDocumentCookie": "off",
+            "noExplicitAny": "off",
+            "noEmptyBlockStatements": "off"
+          },
+          "correctness": {
+            "useExhaustiveDependencies": "warn",
+            "noUnusedVariables": "off"
+          },
+          "a11y": {
+            "useFocusableInteractive": "off",
+            "useSemanticElements": "off",
+            "noNoninteractiveTabindex": "off",
+            "useKeyWithClickEvents": "off",
+            "noNoninteractiveElementInteractions": "off"
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "editor.defaultFormatter": "biomejs.biome",
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.biome": "explicit",
+    "source.organizeImports.biome": "explicit"
+  },
+  // Language-specific comment settings
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "files.exclude": {
+    "packages/app/src/app/apple-icon.png": true,
+    "packages/app/src/app/favicon.ico": true,
+    "packages/app/src/app/icon0.svg": true,
+    "packages/app/src/app/icon1.png": true,
+    "packages/app/node_modules": true,
+    "node_modules": true,
+    ".vercel": true,
+    "packages/app/next-env.d.ts": true,
+    "packages/app/tsconfig.tsbuildinfo": true
+  },
+  "[json]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  }
+}

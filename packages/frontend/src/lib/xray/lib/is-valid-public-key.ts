@@ -1,0 +1,10 @@
+import type { PublicKey as PublicKeyType } from "@solana/web3.js";
+import { PublicKey } from "@solana/web3.js";
+
+export const isValidPublicKey = (address = ""): PublicKeyType | null => {
+  try {
+    return new PublicKey(address.trim());
+  } catch (error) {
+    return null;
+  }
+};
