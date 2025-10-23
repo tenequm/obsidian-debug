@@ -22,5 +22,8 @@
     ".vercel": false,
     "packages/app/next-env.d.ts": false,
     "packages/app/tsconfig.tsbuildinfo": false
+  },
+  "[json]": {
+    "editor.defaultFormatter": "biomejs.biome"
   }
 }

@@ -3,6 +3,7 @@
  */
 
 import { Connection, type VersionedTransactionResponse } from "@solana/web3.js";
+import { env } from "@/env";
 
 export type ParsedTransactionError = {
   signature: string;
@@ -16,7 +17,7 @@ export type ParsedTransactionError = {
  * Creates a Solana connection using Helius RPC endpoint
  */
 function createConnection(): Connection {
-  const apiKey = process.env.HELIUS_API_KEY;
+  const apiKey = env.HELIUS_API_KEY;
   if (!apiKey) {
     throw new Error("HELIUS_API_KEY not found in environment variables");
   }

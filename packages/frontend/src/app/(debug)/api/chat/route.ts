@@ -157,14 +157,12 @@ ${JSON.stringify(txData.rawTransaction, null, 2)}
     const result = streamText({
       model: anthropic("claude-haiku-4-5"),
       messages: allMessages,
-      // Enable extended thinking with 12K token budget and sequential tool execution
       providerOptions: {
         anthropic: {
-          thinking: { type: "enabled", budgetTokens: 12_000 },
+          thinking: { type: "enabled", budgetTokens: 63_000 },
           disableParallelToolUse: true,
         },
       },
-      // Enable beta features: interleaved thinking and extended cache TTL
       headers: {
         "anthropic-beta":
           "interleaved-thinking-2025-05-14,extended-cache-ttl-2025-04-11",

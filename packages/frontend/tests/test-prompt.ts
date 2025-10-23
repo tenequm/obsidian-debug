@@ -16,7 +16,7 @@ if (fs.existsSync(envPath)) {
   const envContent = fs.readFileSync(envPath, "utf-8");
   for (const line of envContent.split("\n")) {
     const match = line.match(/^([^=]+)=(.*)$/);
-    if (match) {
+    if (match?.[1] && match[2]) {
       const [, key, value] = match;
       process.env[key.trim()] = value.trim();
     }

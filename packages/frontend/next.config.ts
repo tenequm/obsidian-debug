@@ -2,6 +2,8 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  transpilePackages: ["@t3-oss/env-nextjs", "@t3-oss/env-core"], // ref: https://env.t3.gg/docs/nextjs
+  reactCompiler: true,
 
   // Detailed fetch logging for debugging (dev only)
   logging: {
@@ -12,9 +14,7 @@ const nextConfig: NextConfig = {
 
   // Performance and build optimizations
   experimental: {
-    // Memory and build performance optimizations
-    webpackMemoryOptimizations: true,
-    webpackBuildWorker: true,
+    turbopackFileSystemCacheForDev: true,
 
     // Optimize imports for icon libraries and large packages
     optimizePackageImports: [
