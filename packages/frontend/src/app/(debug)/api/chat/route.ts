@@ -1,44 +1,22 @@
 import { anthropic } from "@ai-sdk/anthropic";
+import { Connection } from "@solana/web3.js";
+import type { TextUIPart, UIMessage } from "ai";
 import { convertToModelMessages, streamText } from "ai";
-import { isValidSignature, parseTransaction } from "@/lib/solana/parser";
+import { env } from "@/env";
+import { isValidSignature } from "@/lib/solana/utils";
 
 export const maxDuration = 60;
+
+// Create Solana connection
+const connection = new Connection(
+  `https://mainnet.helius-rpc.com/?api-key=${env.HELIUS_API_KEY}`,
+  "confirmed"
+);
 
 // Constants
 const WHITESPACE_REGEX = /\s+/;
 
-/**
- * Detects if a message contains a Solana transaction signature
- */
-function detectTransactionSignature(message: string): string | null {
-  const words = message.split(WHITESPACE_REGEX);
-  for (const word of words) {
-    if (isValidSignature(word)) {
-      return word.trim();
-    }
-  }
-  return null;
-}
-
-export async function POST(request: Request) {
-  try {
-    const { messages } = await request.json();
-
-    // Check the last user message for a transaction signature
-    const lastMessage = messages.at(-1);
-    // Extract text from message parts (AI SDK v5 pattern)
-    const textPart = lastMessage?.parts?.find(
-      (p: { type: string }) => p.type === "text"
-    );
-    const userMessage = (textPart as { text?: string })?.text || "";
-
-    // Build system messages array (following x3000 backend pattern)
-    const systemMessages: Array<{ role: "system"; content: string }> = [];
-
-    // Part 1: Static system prompt (always present, cacheable)
-    systemMessages.push({
-      role: "system",
-      content: `You are an expert Solana transaction debugger for developers. When users share transaction signatures, you analyze failed transactions and provide detailed technical explanations with actionable solutions.
+const SYSTEM_PROMPT = `You are an expert Solana transaction debugger for developers. When users share transaction signatures, you analyze failed transactions and provide detailed technical explanations with actionable solutions.
 
 ## Your Output Format
 
@@ -114,7 +92,40 @@ For each transaction, systematically extract and analyze:
 - Be vague ("increase slippage" → "Set slippage to 0.5-1%")
 - Omit critical transaction data to be "simpler"
 - Use uncertain language ("might be", "could be")
-- Provide only one solution when multiple exist`,
+- Provide only one solution when multiple exist`;
+
+/**
+ * Detects if a message contains a Solana transaction signature
+ */
+function detectTransactionSignature(message: string): string | null {
+  const words = message.split(WHITESPACE_REGEX);
+  for (const word of words) {
+    if (isValidSignature(word)) {
+      return word.trim();
+    }
+  }
+  return null;
+}
+
+export async function POST(request: Request) {
+  try {
+    const { messages } = await request.json();
+
+    // Check the last user message for a transaction signature
+    const lastMessage = messages.at(-1) as UIMessage | undefined;
+    // Extract text from message parts (AI SDK v5 pattern)
+    const textPart = lastMessage?.parts?.find(
+      (p): p is TextUIPart => p.type === "text"
+    );
+    const userMessage = textPart?.text || "";
+
+    // Build system messages array (following x3000 backend pattern)
+    const systemMessages: Array<{ role: "system"; content: string }> = [];
+
+    // Part 1: Static system prompt (always present, cacheable)
+    systemMessages.push({
+      role: "system",
+      content: SYSTEM_PROMPT,
     });
 
     // Part 2: Transaction data (only when signature detected, dynamic)
@@ -123,25 +134,33 @@ For each transaction, systematically extract and analyze:
       console.log(`[Transaction Debug] Detected signature: ${signature}`);
 
       try {
-        const txData = await parseTransaction(signature);
-        console.log(
-          "[Transaction Debug] Fetched transaction:",
-          txData.errorMessage
-        );
-
-        // Add complete transaction data as JSON for systematic analysis
-        systemMessages.push({
-          role: "system",
-          content: `=== TRANSACTION DATA ===
-
-${JSON.stringify(txData.rawTransaction, null, 2)}
-
-=== END TRANSACTION DATA ===`,
+        const tx = await connection.getTransaction(signature, {
+          maxSupportedTransactionVersion: 0,
+          commitment: "confirmed",
         });
 
-        console.log(
-          "[Transaction Debug] Added full transaction JSON to system messages"
-        );
+        if (tx) {
+          console.log(
+            "[Transaction Debug] Fetched transaction:",
+            tx.meta?.err ? "Failed" : "Success"
+          );
+
+          // Add complete transaction data as JSON for systematic analysis
+          systemMessages.push({
+            role: "system",
+            content: `=== TRANSACTION DATA ===
+
+${JSON.stringify(tx, null, 2)}
+
+=== END TRANSACTION DATA ===`,
+          });
+
+          console.log(
+            "[Transaction Debug] Added full transaction JSON to system messages"
+          );
+        } else {
+          console.log("[Transaction Debug] Transaction not found");
+        }
       } catch (error) {
         console.error("[Transaction Debug] Error fetching transaction:", error);
         // Continue without transaction data if fetch fails
@@ -151,12 +170,9 @@ ${JSON.stringify(txData.rawTransaction, null, 2)}
     // Convert UI messages to model messages
     const convertedMessages = convertToModelMessages(messages);
 
-    // Build complete message array: system messages + user conversation
-    const allMessages = [...systemMessages, ...convertedMessages];
-
     const result = streamText({
       model: anthropic("claude-haiku-4-5"),
-      messages: allMessages,
+      messages: [...systemMessages, ...convertedMessages],
       providerOptions: {
         anthropic: {
           thinking: { type: "enabled", budgetTokens: 63_000 },

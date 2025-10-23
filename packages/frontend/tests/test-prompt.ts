@@ -10,19 +10,6 @@ import * as path from "node:path";
 import { anthropic } from "@ai-sdk/anthropic";
 import { generateText } from "ai";
 
-// Load environment variables from .env
-const envPath = path.join(__dirname, "../../.env");
-if (fs.existsSync(envPath)) {
-  const envContent = fs.readFileSync(envPath, "utf-8");
-  for (const line of envContent.split("\n")) {
-    const match = line.match(/^([^=]+)=(.*)$/);
-    if (match?.[1] && match[2]) {
-      const [, key, value] = match;
-      process.env[key.trim()] = value.trim();
-    }
-  }
-}
-
 // Load sample transaction data
 const sampleTx = JSON.parse(
   fs.readFileSync(path.join(__dirname, "sample-transaction.json"), "utf-8")
@@ -118,22 +105,17 @@ const CONFIG = {
   model: "claude-haiku-4-5", // or "claude-sonnet-4-5"
   thinking: false, // Enable extended thinking?
   thinkingBudget: 10_000, // Thinking token budget
-  lineLength: 80,
 };
 
 // =============================================================================
 // Main execution
 // =============================================================================
 async function testPrompt() {
-  console.log("=".repeat(CONFIG.lineLength));
-  console.log("TESTING PROMPT WITH CONFIGURATION:");
-  console.log("=".repeat(CONFIG.lineLength));
+  console.log("\n🧪 Testing Prompt");
   console.log(`Model: ${CONFIG.model}`);
-  console.log(`Extended Thinking: ${CONFIG.thinking ? "Enabled" : "Disabled"}`);
   if (CONFIG.thinking) {
-    console.log(`Thinking Budget: ${CONFIG.thinkingBudget} tokens`);
+    console.log(`Thinking: Enabled (${CONFIG.thinkingBudget} tokens)`);
   }
-  console.log("=".repeat(CONFIG.lineLength));
   console.log();
 
   // Build transaction summary (same structure as route.ts would have)
@@ -163,8 +145,6 @@ ${JSON.stringify(txSummary, null, 2)}
 
 === END TRANSACTION DATA ===`;
 
-  console.log("📤 Sending request to Anthropic...\n");
-
   const startTime = Date.now();
 
   try {
@@ -191,49 +171,11 @@ ${JSON.stringify(txSummary, null, 2)}
 
     const elapsed = Date.now() - startTime;
 
-    console.log("=".repeat(CONFIG.lineLength));
-    console.log("RESPONSE:");
-    console.log("=".repeat(CONFIG.lineLength));
+    console.log("\n📝 Response:\n");
     console.log(result.text);
-    console.log("=".repeat(CONFIG.lineLength));
-    console.log();
-    console.log("STATS:");
-    console.log("=".repeat(CONFIG.lineLength));
-    console.log(`⏱️  Time: ${elapsed}ms`);
-    console.log(`📊 Input tokens: ${result.usage.inputTokens}`);
-    console.log(`📊 Output tokens: ${result.usage.outputTokens}`);
-    console.log(`📊 Total tokens: ${result.usage.totalTokens}`);
     console.log(
-      `💰 Estimated cost: $${(result.usage.totalTokens ?? 0 * 0.000_001).toFixed(6)}`
+      `\n⏱️  ${elapsed}ms | 📊 ${result.usage.totalTokens} tokens (${result.usage.inputTokens} in, ${result.usage.outputTokens} out) | 💰 $${((result.usage.totalTokens ?? 0) * 0.000_001).toFixed(6)}\n`
     );
-    console.log("=".repeat(CONFIG.lineLength));
-
-    // Simple output validation
-    console.log();
-    console.log("VALIDATION:");
-    console.log("=".repeat(CONFIG.lineLength));
-    const text = result.text;
-    const hasSection1 = text.includes("1. What went wrong");
-    const hasSection2 = text.includes("2. Why it failed");
-    const hasSection3 = text.includes("3. How to fix");
-    const hasCodeBlock =
-      text.includes("```") ||
-      text.includes("javascript") ||
-      text.includes("typescript");
-    const wordCount = text.split(/\s+/).length;
-
-    console.log(
-      `✅ Has "What went wrong" section: ${hasSection1 ? "YES" : "NO"}`
-    );
-    console.log(
-      `✅ Has "Why it failed" section: ${hasSection2 ? "YES" : "NO"}`
-    );
-    console.log(`✅ Has "How to fix" section: ${hasSection3 ? "YES" : "NO"}`);
-    console.log(
-      `❌ Contains code blocks: ${hasCodeBlock ? "YES (BAD)" : "NO (GOOD)"}`
-    );
-    console.log(`📝 Total word count: ${wordCount}`);
-    console.log("=".repeat(CONFIG.lineLength));
   } catch (error) {
     console.error("❌ Error:", error);
     process.exit(1);

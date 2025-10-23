@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { isValidSignature } from "@/lib/solana/parser";
+import { isValidSignature } from "@/lib/solana/utils";
 
 type TransactionInputProps = {
   onAnalyze?: (signature: string) => void;
