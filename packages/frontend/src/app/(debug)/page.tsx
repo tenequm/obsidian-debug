@@ -29,6 +29,7 @@ import {
   ReasoningTrigger,
 } from "@/components/ai-elements/reasoning";
 import { Response } from "@/components/ai-elements/response";
+import { Suggestion, Suggestions } from "@/components/ai-elements/suggestion";
 import {
   Tool,
   ToolContent,
@@ -36,11 +37,14 @@ import {
   ToolInput,
   ToolOutput,
 } from "@/components/ai-elements/tool";
+import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { SidebarTrigger } from "@/components/ui/sidebar";
 import { isValidSignature } from "@/lib/solana/utils";
+
+const EXAMPLE_TRANSACTION =
+  "21TQdryJZpurVh2gFKpUMi6n1ypvvUUzaiUwynPBEbdMULwU5j5d7HiQwvReovoPZdW18bkKbnyKKWY4jUmj9WbT";
 
 export default function DebugPage() {
   const { messages, status, sendMessage } = useChat();
@@ -97,16 +101,17 @@ export default function DebugPage() {
     setSignatureError("");
   };
 
+  const handleSuggestionClick = (suggestion: string) => {
+    setSignature(suggestion);
+    setSignatureError("");
+  };
+
   const isLoading = status === "streaming" || status === "submitted";
   const isSignatureValid = signature.trim() && !signatureError;
 
   return (
     <>
-      <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
-        <div className="flex items-center gap-2 px-4">
-          <SidebarTrigger className="-ml-1" />
-        </div>
-      </header>
+      <PageHeader />
 
       <div className="relative flex size-full flex-col divide-y overflow-hidden">
         <Conversation>
@@ -149,6 +154,20 @@ export default function DebugPage() {
                       {isLoading ? "Analyzing..." : "Debug Transaction"}
                     </Button>
                   </form>
+
+                  <div className="space-y-3 text-center">
+                    <p className="text-muted-foreground text-sm">
+                      Or try an example:
+                    </p>
+                    <Suggestions className="justify-center">
+                      <Suggestion
+                        onClick={handleSuggestionClick}
+                        suggestion={EXAMPLE_TRANSACTION}
+                      >
+                        Try failed swap transaction
+                      </Suggestion>
+                    </Suggestions>
+                  </div>
                 </div>
               </div>
             ) : (

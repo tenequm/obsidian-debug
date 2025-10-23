@@ -33,6 +33,7 @@ The following components are currently installed from the registry:
 7. **code-block** - Syntax-highlighted code with copy functionality
 8. **loader** - Loading states for AI operations
 9. **shimmer** - Animated text shimmer effect
+10. **suggestion** - Interactive suggestion chips for guided user input
 
 ## Maintenance Philosophy
 

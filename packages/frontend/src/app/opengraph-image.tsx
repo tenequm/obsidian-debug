@@ -2,7 +2,7 @@ import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
 
-export const alt = "Obsidian Protocol - Universal Credit for All Intelligence";
+export const alt = "Obsidian Debug - AI-Powered Solana Transaction Debugger";
 export const size = {
   width: 1200,
   height: 630,
@@ -48,7 +48,7 @@ export default async function Image() {
             textAlign: "center",
           }}
         >
-          Obsidian Protocol
+          Obsidian Debug
         </h1>
 
         <p
@@ -60,7 +60,7 @@ export default async function Image() {
             maxWidth: "800px",
           }}
         >
-          Universal Credit for All Intelligence
+          AI-Powered Solana Transaction Debugger
         </p>
 
         <div

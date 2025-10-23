@@ -8,7 +8,7 @@ AI-powered transaction error analysis for Solana developers. Instantly understan
 
 ## 🌐 Demo
 
-**[obsidian.credit](https://obsidian.credit)** - Live debugger
+**[soldebug.dev](https://soldebug.dev)** - Live debugger
 
 > ⚠️ **Development Status**: Active development for Colosseum Cypherpunk Hackathon. Core features in progress.
 
@@ -120,8 +120,8 @@ Built-in library of common Solana errors across major protocols:
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/tenequm/obsidian-protocol
-cd obsidian-protocol
+git clone https://github.com/tenequm/obsidian-debug
+cd obsidian-debug
 ```
 
 2. Install dependencies:
@@ -141,7 +141,7 @@ Add your API keys:
 ```env
 NEXT_PUBLIC_RPC_ENDPOINT=https://api.mainnet-beta.solana.com
 ANTHROPIC_API_KEY=your_claude_api_key
-NEXT_PUBLIC_SITE_URL=https://obsidian.credit
+NEXT_PUBLIC_SITE_URL=https://soldebug.dev
 ```
 
 ### Development
@@ -181,9 +181,9 @@ Special thanks to:
 
 ## 📬 Contact
 
-- Website: [obsidian.credit](https://obsidian.credit)
-- Twitter: [@obsidiancredit](https://x.com/obsidiancredit)
-- GitHub: [obsidian-protocol](https://github.com/tenequm/obsidian-protocol)
+- Website: [soldebug.dev](https://soldebug.dev)
+- Twitter: [@obsidiandebug](https://x.com/obsidiandebug)
+- GitHub: [obsidian-debug](https://github.com/tenequm/obsidian-debug)
 
 ## ⚠️ Disclaimers
 

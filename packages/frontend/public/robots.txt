@@ -1,10 +1,10 @@
-# Robots.txt for Obsidian Protocol
+# Robots.txt for Obsidian Debug
 
 User-agent: *
 Allow: /
 
 # Sitemap
-Sitemap: https://obsidian.credit/sitemap.xml
+Sitemap: https://soldebug.dev/sitemap.xml
 
 # Crawl-delay (optional, in seconds)
 Crawl-delay: 1

@@ -1,32 +1,10 @@
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbList,
-  BreadcrumbPage,
-} from "@/components/ui/breadcrumb";
+import { PageHeader } from "@/components/page-header";
 import { Card, CardContent } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { SidebarTrigger } from "@/components/ui/sidebar";
 
 export default function AboutPage() {
   return (
     <>
-      <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
-        <div className="flex items-center gap-2 px-4">
-          <SidebarTrigger className="-ml-1" />
-          <Separator
-            className="mr-2 data-[orientation=vertical]:h-4"
-            orientation="vertical"
-          />
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbPage>About</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-        </div>
-      </header>
+      <PageHeader />
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
         <div className="container mx-auto max-w-4xl space-y-8 px-4 py-8">
           <div className="space-y-4">
@@ -94,7 +72,7 @@ export default function AboutPage() {
             <div className="flex justify-center gap-6">
               <a
                 className="text-primary transition-colors hover:underline"
-                href="https://x.com/obsidiancredit"
+                href="https://x.com/obsidiandebug"
                 rel="noopener noreferrer"
                 target="_blank"
               >
@@ -102,13 +80,13 @@ export default function AboutPage() {
               </a>
               <a
                 className="text-primary transition-colors hover:underline"
-                href="mailto:hello@obsidian.credit"
+                href="mailto:hello@soldebug.dev"
               >
                 Email
               </a>
               <a
                 className="text-primary transition-colors hover:underline"
-                href="https://github.com/obsidian-credit"
+                href="https://github.com/tenequm/obsidian-debug"
                 rel="noopener noreferrer"
                 target="_blank"
               >

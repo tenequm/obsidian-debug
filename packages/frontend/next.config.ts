@@ -38,7 +38,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "obsidian.credit",
+        hostname: "soldebug.dev",
       },
     ],
   },

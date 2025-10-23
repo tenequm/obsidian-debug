@@ -22,12 +22,12 @@ export const metadata: Metadata = {
   authors: [{ name: "Obsidian Debug Team" }],
   creator: "Obsidian Debug",
   publisher: "Obsidian Debug",
-  metadataBase: new URL("https://obsidian.credit"),
+  metadataBase: new URL("https://soldebug.dev"),
   openGraph: {
     title: "Obsidian Debug - Solana Transaction Debugger",
     description:
       "AI-powered transaction error analysis. Instantly understand why Solana transactions fail and get actionable fixes.",
-    url: "https://obsidian.credit",
+    url: "https://soldebug.dev",
     siteName: "Obsidian Debug",
     images: [
       {
@@ -45,8 +45,8 @@ export const metadata: Metadata = {
     title: "Obsidian Debug - Solana Transaction Debugger",
     description:
       "AI-powered transaction error analysis for Solana developers. 30 minutes → 30 seconds.",
-    creator: "@obsidiancredit",
-    site: "@obsidiancredit",
+    creator: "@obsidiandebug",
+    site: "@obsidiandebug",
     images: ["/twitter-image"],
   },
   robots: {
@@ -61,7 +61,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: "https://obsidian.credit",
+    canonical: "https://soldebug.dev",
   },
   appleWebApp: {
     title: "Obsidian Debug",
