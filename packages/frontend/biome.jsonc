@@ -1,9 +1,6 @@
 {
   "$schema": "../../node_modules/@biomejs/biome/configuration_schema.json",
   "extends": "//",
-  "files": {
-    "includes": ["!tests/**/*.ts", "!tests/**/*.tsx"]
-  },
   "overrides": [
     {
       // Tailwind CSS 4.1 at-rules support

@@ -21,7 +21,7 @@ importers:
         specifier: 5.6.4
         version: 5.6.4(typescript@5.9.3)
 
-  packages/app:
+  packages/frontend:
     dependencies:
       '@ai-sdk/anthropic':
         specifier: ^2.0.37

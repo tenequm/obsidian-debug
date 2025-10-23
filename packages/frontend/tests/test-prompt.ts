@@ -2,6 +2,8 @@
  * Simple script to test prompt changes
  * Run with: pnpm test:prompt
  */
+/** biome-ignore-all lint/performance/useTopLevelRegex: don't need that here */
+/** biome-ignore-all lint/performance/noNamespaceImport: don't need that here */
 
 import * as fs from "node:fs";
 import * as path from "node:path";
@@ -116,21 +118,22 @@ const CONFIG = {
   model: "claude-haiku-4-5", // or "claude-sonnet-4-5"
   thinking: false, // Enable extended thinking?
   thinkingBudget: 10_000, // Thinking token budget
+  lineLength: 80,
 };
 
 // =============================================================================
 // Main execution
 // =============================================================================
 async function testPrompt() {
-  console.log("=".repeat(80));
+  console.log("=".repeat(CONFIG.lineLength));
   console.log("TESTING PROMPT WITH CONFIGURATION:");
-  console.log("=".repeat(80));
+  console.log("=".repeat(CONFIG.lineLength));
   console.log(`Model: ${CONFIG.model}`);
   console.log(`Extended Thinking: ${CONFIG.thinking ? "Enabled" : "Disabled"}`);
   if (CONFIG.thinking) {
     console.log(`Thinking Budget: ${CONFIG.thinkingBudget} tokens`);
   }
-  console.log("=".repeat(80));
+  console.log("=".repeat(CONFIG.lineLength));
   console.log();
 
   // Build transaction summary (same structure as route.ts would have)
@@ -188,14 +191,14 @@ ${JSON.stringify(txSummary, null, 2)}
 
     const elapsed = Date.now() - startTime;
 
-    console.log("=".repeat(80));
+    console.log("=".repeat(CONFIG.lineLength));
     console.log("RESPONSE:");
-    console.log("=".repeat(80));
+    console.log("=".repeat(CONFIG.lineLength));
     console.log(result.text);
-    console.log("=".repeat(80));
+    console.log("=".repeat(CONFIG.lineLength));
     console.log();
     console.log("STATS:");
-    console.log("=".repeat(80));
+    console.log("=".repeat(CONFIG.lineLength));
     console.log(`⏱️  Time: ${elapsed}ms`);
     console.log(`📊 Input tokens: ${result.usage.inputTokens}`);
     console.log(`📊 Output tokens: ${result.usage.outputTokens}`);
@@ -203,12 +206,12 @@ ${JSON.stringify(txSummary, null, 2)}
     console.log(
       `💰 Estimated cost: $${(result.usage.totalTokens ?? 0 * 0.000_001).toFixed(6)}`
     );
-    console.log("=".repeat(80));
+    console.log("=".repeat(CONFIG.lineLength));
 
     // Simple output validation
     console.log();
     console.log("VALIDATION:");
-    console.log("=".repeat(80));
+    console.log("=".repeat(CONFIG.lineLength));
     const text = result.text;
     const hasSection1 = text.includes("1. What went wrong");
     const hasSection2 = text.includes("2. Why it failed");
@@ -230,7 +233,7 @@ ${JSON.stringify(txSummary, null, 2)}
       `❌ Contains code blocks: ${hasCodeBlock ? "YES (BAD)" : "NO (GOOD)"}`
     );
     console.log(`📝 Total word count: ${wordCount}`);
-    console.log("=".repeat(80));
+    console.log("=".repeat(CONFIG.lineLength));
   } catch (error) {
     console.error("❌ Error:", error);
     process.exit(1);
