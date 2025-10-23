@@ -1,6 +1,6 @@
 "use client";
 
-import { Bug, Info } from "lucide-react";
+import { Bug, Info, Plus } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -33,6 +33,10 @@ const navItems = [
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
 
+  const handleNewDebugSession = () => {
+    window.dispatchEvent(new CustomEvent("new-debug-session"));
+  };
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
@@ -48,6 +52,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <span className="truncate text-xs">AI-Powered Debugger</span>
                 </div>
               </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              onClick={handleNewDebugSession}
+              tooltip="Start a new debug session"
+            >
+              <Plus />
+              <span>New Debug Session</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

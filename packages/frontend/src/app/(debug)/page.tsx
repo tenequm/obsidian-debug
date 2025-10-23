@@ -3,7 +3,7 @@
 import { useChat } from "@ai-sdk/react";
 import type { ToolUIPart } from "ai";
 import type { FormEvent } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Conversation,
   ConversationContent,
@@ -47,9 +47,23 @@ const EXAMPLE_TRANSACTION =
   "21TQdryJZpurVh2gFKpUMi6n1ypvvUUzaiUwynPBEbdMULwU5j5d7HiQwvReovoPZdW18bkKbnyKKWY4jUmj9WbT";
 
 export default function DebugPage() {
-  const { messages, status, sendMessage } = useChat();
+  const { messages, status, sendMessage, setMessages } = useChat();
   const [signature, setSignature] = useState("");
   const [signatureError, setSignatureError] = useState("");
+
+  // Handle new debug session event from sidebar
+  useEffect(() => {
+    const handleNewDebugSession = () => {
+      setMessages([]);
+      setSignature("");
+      setSignatureError("");
+    };
+
+    window.addEventListener("new-debug-session", handleNewDebugSession);
+    return () => {
+      window.removeEventListener("new-debug-session", handleNewDebugSession);
+    };
+  }, [setMessages]);
 
   const handleSubmit = (
     message: PromptInputMessage,
