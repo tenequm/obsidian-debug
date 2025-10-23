@@ -3,6 +3,19 @@
   "extends": "//",
   "overrides": [
     {
+      "includes": ["tests/**/*.ts", "tests/**/*.tsx"],
+      "linter": {
+        "rules": {
+          "performance": {
+            "noNamespaceImport": "off"
+          },
+          "suspicious": {
+            "noSkippedTests": "off"
+          }
+        }
+      }
+    },
+    {
       // Tailwind CSS 4.1 at-rules support
       "includes": ["**/*.css"],
       "linter": {
@@ -52,7 +65,8 @@
           },
           "nursery": {
             "noShadow": "off",
-            "useConsistentTypeDefinitions": "off"
+            "useConsistentTypeDefinitions": "off",
+            "noDeprecatedImports": "off"
           },
           "suspicious": {
             "noDocumentCookie": "off",
