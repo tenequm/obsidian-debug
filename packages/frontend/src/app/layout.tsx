@@ -77,7 +77,7 @@ export default function RootLayout({
     <html className="dark" lang="en">
       <body className="antialiased">
         <ReactQueryProvider>
-          <SidebarProvider>
+          <SidebarProvider defaultOpen={false}>
             <AppSidebar />
             <SidebarInset>{children}</SidebarInset>
           </SidebarProvider>

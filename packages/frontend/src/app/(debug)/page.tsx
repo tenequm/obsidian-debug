@@ -2,8 +2,8 @@
 
 import { useChat } from "@ai-sdk/react";
 import type { ToolUIPart } from "ai";
-import { Bot } from "lucide-react";
 import type { FormEvent } from "react";
+import { useState } from "react";
 import {
   Conversation,
   ConversationContent,
@@ -36,10 +36,16 @@ import {
   ToolInput,
   ToolOutput,
 } from "@/components/ai-elements/tool";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { isValidSignature } from "@/lib/solana/utils";
 
 export default function DebugPage() {
   const { messages, status, sendMessage } = useChat();
+  const [signature, setSignature] = useState("");
+  const [signatureError, setSignatureError] = useState("");
 
   const handleSubmit = (
     message: PromptInputMessage,
@@ -51,7 +57,48 @@ export default function DebugPage() {
     }
   };
 
+  const handleSignatureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSignature(value);
+
+    // Validate if user has typed something
+    if (value.trim()) {
+      if (isValidSignature(value.trim())) {
+        setSignatureError("");
+      } else {
+        setSignatureError(
+          "Invalid transaction signature. Must be 87-88 base58 characters."
+        );
+      }
+    } else {
+      setSignatureError("");
+    }
+  };
+
+  const handleSignatureSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const trimmedSignature = signature.trim();
+
+    if (!trimmedSignature) {
+      setSignatureError("Please enter a transaction signature.");
+      return;
+    }
+
+    if (!isValidSignature(trimmedSignature)) {
+      setSignatureError(
+        "Invalid transaction signature. Must be 87-88 base58 characters."
+      );
+      return;
+    }
+
+    // Send the signature as a message
+    sendMessage({ text: trimmedSignature });
+    setSignature("");
+    setSignatureError("");
+  };
+
   const isLoading = status === "streaming" || status === "submitted";
+  const isSignatureValid = signature.trim() && !signatureError;
 
   return (
     <>
@@ -66,16 +113,42 @@ export default function DebugPage() {
           <ConversationContent className="mx-auto w-full max-w-4xl p-4">
             {messages.length === 0 ? (
               <div className="flex min-h-[60vh] items-center justify-center">
-                <div className="space-y-4 px-4 text-center">
-                  <Bot className="mx-auto h-12 w-12 text-muted-foreground" />
-                  <div className="space-y-2">
-                    <h2 className="font-semibold text-xl">
-                      Chat with Claude Haiku 4.5
-                    </h2>
-                    <p className="text-muted-foreground">
-                      Start a conversation by typing a message below
+                <div className="w-full max-w-lg space-y-8 px-4">
+                  <div className="space-y-3 text-center">
+                    <h1 className="font-bold text-4xl tracking-tight">
+                      Obsidian Debug
+                    </h1>
+                    <p className="text-lg text-muted-foreground">
+                      AI-Powered Debugger for failed Solana transactions
                     </p>
                   </div>
+
+                  <form className="space-y-4" onSubmit={handleSignatureSubmit}>
+                    <div className="space-y-2">
+                      <Label htmlFor="signature">Transaction Signature</Label>
+                      <Input
+                        aria-invalid={!!signatureError}
+                        id="signature"
+                        onChange={handleSignatureChange}
+                        placeholder="Paste your failed transaction signature..."
+                        type="text"
+                        value={signature}
+                      />
+                      {signatureError && (
+                        <p className="text-destructive text-sm">
+                          {signatureError}
+                        </p>
+                      )}
+                    </div>
+
+                    <Button
+                      className="w-full"
+                      disabled={!isSignatureValid || isLoading}
+                      type="submit"
+                    >
+                      {isLoading ? "Analyzing..." : "Debug Transaction"}
+                    </Button>
+                  </form>
                 </div>
               </div>
             ) : (
@@ -154,19 +227,21 @@ export default function DebugPage() {
           <ConversationScrollButton />
         </Conversation>
 
-        <div className="shrink-0">
-          <div className="mx-auto w-full max-w-4xl p-4">
-            <PromptInput onSubmit={handleSubmit}>
-              <PromptInputTextarea />
-              <PromptInputFooter>
-                <PromptInputTools>
-                  {/* Future: Add action buttons here */}
-                </PromptInputTools>
-                <PromptInputSubmit status={status} />
-              </PromptInputFooter>
-            </PromptInput>
+        {messages.length > 0 && (
+          <div className="shrink-0">
+            <div className="mx-auto w-full max-w-4xl p-4">
+              <PromptInput onSubmit={handleSubmit}>
+                <PromptInputTextarea />
+                <PromptInputFooter>
+                  <PromptInputTools>
+                    {/* Future: Add action buttons here */}
+                  </PromptInputTools>
+                  <PromptInputSubmit status={status} />
+                </PromptInputFooter>
+              </PromptInput>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </>
   );
