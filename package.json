@@ -8,12 +8,12 @@
     "build": "turbo build",
     "lint": "biome check",
     "format": "biome check --write",
-    "check": "turbo check",
+    "check": "biome check --write",
     "type-check": "tsc --noEmit",
     "clean": "rm -rf node_modules packages/*/node_modules packages/app/.next"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.2.6",
+    "@biomejs/biome": "2.2.7",
     "husky": "^9.1.7",
     "turbo": "^2.5.8",
     "ultracite": "5.6.4"

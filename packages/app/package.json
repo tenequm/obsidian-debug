@@ -9,10 +9,11 @@
     "lint": "biome check",
     "format": "biome check --write",
     "check": "biome check --write && tsc --noEmit",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "test:prompt": "tsx src/tests/test-prompt.ts"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "^2.0.35",
+    "@ai-sdk/anthropic": "^2.0.37",
     "@ai-sdk/react": "^2.0.76",
     "@radix-ui/react-avatar": "^1.1.10",
     "@radix-ui/react-collapsible": "^1.1.12",
@@ -47,12 +48,13 @@
     "winston": "^3.18.3"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.1.15",
+    "@tailwindcss/postcss": "^4.1.16",
     "@types/node": "^24.9.1",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
     "@types/react-syntax-highlighter": "^15.5.13",
-    "tailwindcss": "^4.1.15",
+    "tailwindcss": "^4.1.16",
+    "tsx": "^4.20.6",
     "typescript": "^5.9.3"
   }
 }

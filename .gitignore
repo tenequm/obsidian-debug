@@ -54,3 +54,4 @@ tmp
 logs/
 *.log
 .turbo
+.env*.local
