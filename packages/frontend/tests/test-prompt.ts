@@ -5,15 +5,21 @@
 /** biome-ignore-all lint/performance/useTopLevelRegex: don't need that here */
 /** biome-ignore-all lint/performance/noNamespaceImport: don't need that here */
 
-import * as fs from "node:fs";
-import * as path from "node:path";
+import "dotenv/config";
 import { anthropic } from "@ai-sdk/anthropic";
+import { Connection, type ParsedTransactionWithMeta } from "@solana/web3.js";
 import { generateText } from "ai";
+import { env } from "@/env";
 
-// Load sample transaction data
-const sampleTx = JSON.parse(
-  fs.readFileSync(path.join(__dirname, "sample-transaction.json"), "utf-8")
+// Create Solana connection (same as route.ts)
+const connection = new Connection(
+  `https://mainnet.helius-rpc.com/?api-key=${env.HELIUS_API_KEY}`,
+  "confirmed"
 );
+
+// Transaction signature to test
+const TRANSACTION_SIGNATURE =
+  "21TQdryJZpurVh2gFKpUMi6n1ypvvUUzaiUwynPBEbdMULwU5j5d7HiQwvReovoPZdW18bkKbnyKKWY4jUmj9WbT";
 
 // =============================================================================
 // EDIT THIS PROMPT TO TEST DIFFERENT VARIATIONS
@@ -118,24 +124,46 @@ async function testPrompt() {
   }
   console.log();
 
-  // Build transaction summary (same structure as route.ts would have)
+  // Fetch transaction from Solana with parsed instructions
+  console.log(`📡 Fetching transaction: ${TRANSACTION_SIGNATURE}`);
+
+  let tx: ParsedTransactionWithMeta | null;
+  try {
+    tx = await connection.getParsedTransaction(TRANSACTION_SIGNATURE, {
+      maxSupportedTransactionVersion: 0,
+      commitment: "confirmed",
+    });
+
+    if (!tx) {
+      console.error("❌ Transaction not found");
+      process.exit(1);
+    }
+
+    console.log(
+      `✅ Fetched transaction: ${tx.meta?.err ? "Failed" : "Success"}`
+    );
+  } catch (error) {
+    console.error("❌ Error fetching transaction:", error);
+    process.exit(1);
+  }
+
+  // Build transaction summary (same structure as route.ts:150-167)
   const txSummary = {
-    signature:
-      "21TQdryJZpurVh2gFKpUMi6n1ypvvUUzaiUwynPBEbdMULwU5j5d7HiQwvReovoPZdW18bkKbnyKKWY4jUmj9WbT",
+    signature: TRANSACTION_SIGNATURE,
     error: {
-      type: JSON.stringify(sampleTx.meta.err),
-      object: sampleTx.meta.err,
+      type: JSON.stringify(tx.meta?.err),
+      object: tx.meta?.err,
     },
-    innerInstructions: sampleTx.meta.innerInstructions,
-    logs: sampleTx.meta.logMessages,
+    innerInstructions: tx.meta?.innerInstructions,
+    logs: tx.meta?.logMessages,
     balanceChange: {
-      pre: sampleTx.meta.preBalances[0],
-      post: sampleTx.meta.postBalances[0],
-      fee: sampleTx.meta.fee,
+      pre: tx.meta?.preBalances,
+      post: tx.meta?.postBalances,
+      fee: tx.meta?.fee,
     },
     tokens: {
-      pre: sampleTx.meta.preTokenBalances,
-      post: sampleTx.meta.postTokenBalances,
+      pre: tx.meta?.preTokenBalances,
+      post: tx.meta?.postTokenBalances,
     },
   };
 

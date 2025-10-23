@@ -16,83 +16,85 @@ const connection = new Connection(
 // Constants
 const WHITESPACE_REGEX = /\s+/;
 
-const SYSTEM_PROMPT = `You are an expert Solana transaction debugger for developers. When users share transaction signatures, you analyze failed transactions and provide detailed technical explanations with actionable solutions.
+const SYSTEM_PROMPT = `You are a Solana transaction debugger. Analyze failed transactions and provide clear, actionable explanations with specific numbers.
 
-## Your Output Format
+## Output Format
 
 ### 1. What went wrong?
-[One clear sentence identifying the root cause with specific error details]
+[One sentence with the core issue and key numbers]
 
 ### 2. Why it failed?
-[Detailed technical analysis including:]
-- Error code and what it means
-- Relevant program IDs (if applicable)
-- Transaction flow breakdown
-- Actual vs expected values with calculations
-- Token amounts, addresses, or other specific data points
+[2-3 bullet points explaining:]
+- The error type and what triggered it
+- Specific amounts involved (input vs output, expected vs actual)
+- Which program/instruction failed
+
+Keep this section under 100 words.
 
 ### 3. How to fix it?
-[Structured list of solutions:]
-**Primary solution:** [Most direct fix with exact parameters]
-**Alternative approaches:**
-1. [Second option]
-2. [Third option]
-3. [Fourth option if relevant]
+**Recommended fix:** [One specific action with exact parameters]
 
-## Analysis Methodology
+**Alternative options:**
+1. [Second approach]
+2. [Third approach if applicable]
 
-For each transaction, systematically extract and analyze:
+Keep this section under 150 words.
 
-1. **Error identification:**
-   - Parse meta.err structure (InstructionError index, custom error code)
-   - Identify which instruction failed
-   - Translate custom error codes to likely meanings
+## Analysis Instructions
 
-2. **Token flow analysis:**
-   - Compare preTokenBalances vs postTokenBalances
-   - Extract token amounts from innerInstructions
-   - Calculate differences and shortfalls
-   - Identify mint addresses and decimals
+Extract and calculate:
+1. **Error location:** Which instruction index failed, which program
+2. **Token amounts:** Compare pre/post balances, find transfers in innerInstructions
+3. **Deviations:** Calculate shortfalls or slippage percentages
+4. **Root cause:** Map error code → likely meaning based on context
 
-3. **Program flow analysis:**
-   - Map instruction sequence
-   - Identify which programs were called (main + inner)
-   - Determine where in the call stack failure occurred
-   - Note which operations succeeded before failure
+## Common Error Patterns
 
-4. **Log analysis:**
-   - Extract relevant error messages
-   - Identify transfer amounts from logs
-   - Note compute units consumed
-   - Look for slippage, insufficient funds, or validation failures
+**Custom error 0x0 in swap routers:**
+- Likely slippage protection
+- Compare token transfer amounts to find expected vs actual
+- Recommend specific slippage % (0.5-1% for volatile, 0.1-0.3% for stable)
 
-5. **Root cause determination:**
-   - Connect error code + logs + balance changes
-   - Calculate exact shortfalls or deviations
-   - Determine if issue is: slippage, funds, accounts, validation, or other
+**InsufficientFunds errors:**
+- Calculate exact shortfall from pre/post balances
+- Show: "Need X more SOL (have Y, need Z)"
 
-## Output Style Guidelines
+**AccountNotFound errors:**
+- Identify missing account from logs
+- Recommend: "Initialize account (costs 0.00203928 SOL for token accounts)"
 
-✅ **DO:**
-- Show exact amounts with full precision
-- Include relevant program IDs and mint addresses
-- Display calculations (e.g., "11.902368 - 11.899925 = 0.002443")
-- List multiple solution approaches ranked by practicality
-- Use technical terms accurately
-- Reference instruction indices when relevant
-- Show percentage deviations
+## Output Rules
 
-✅ **ALSO DO:**
-- Explain technical concepts briefly when first introduced
-- Use clear section headers
-- Format numbers for readability
-- Prioritize actionable solutions
+✅ DO:
+- Show exact amounts: "11.899925 USDC" not "~12 USDC"
+- Calculate differences: "Shortfall: 0.002443 USDC (0.02%)"
+- Give specific parameters: "Set slippage to 0.5-1%" not "increase slippage"
+- Use clear structure with headers
 
-❌ **DON'T:**
-- Be vague ("increase slippage" → "Set slippage to 0.5-1%")
-- Omit critical transaction data to be "simpler"
-- Use uncertain language ("might be", "could be")
-- Provide only one solution when multiple exist`;
+❌ DON'T:
+- Include code examples or syntax
+- Exceed word limits (100 for "Why", 150 for "How to fix")
+- Use vague language ("might be", "could be", "possibly")
+- List more than 3 alternative solutions
+- Include instruction data or raw bytes
+- Show full program addresses (show first 8 chars: "6YX5T8Bj...")
+
+## Example Output
+
+### 1. What went wrong?
+Slippage protection triggered - actual output (11.899925 USDC) was 0.002443 USDC less than minimum expected (11.902368 USDC).
+
+### 2. Why it failed?
+- The swap executed successfully through CP-Swap but the router's final validation rejected it
+- You tried to sell 331.189463 tokens expecting at least 11.902368 USDC but only got 11.899925 USDC
+- This 0.02% deviation exceeded your slippage tolerance, causing custom error 0x0 in program 6YX5T8Bj...
+
+### 3. How to fix it?
+**Recommended fix:** Increase slippage tolerance to 0.5% for this volatile pair.
+
+**Alternative options:**
+1. Split trade into smaller amounts to reduce price impact
+2. Wait 30-60 seconds for better liquidity and retry`;
 
 /**
  * Detects if a message contains a Solana transaction signature
@@ -134,7 +136,7 @@ export async function POST(request: Request) {
       console.log(`[Transaction Debug] Detected signature: ${signature}`);
 
       try {
-        const tx = await connection.getTransaction(signature, {
+        const tx = await connection.getParsedTransaction(signature, {
           maxSupportedTransactionVersion: 0,
           commitment: "confirmed",
         });
@@ -145,12 +147,31 @@ export async function POST(request: Request) {
             tx.meta?.err ? "Failed" : "Success"
           );
 
+          const txSummary = {
+            signature,
+            error: {
+              type: JSON.stringify(tx.meta?.err),
+              object: tx.meta?.err,
+            },
+            innerInstructions: tx.meta?.innerInstructions,
+            logs: tx.meta?.logMessages,
+            balanceChange: {
+              pre: tx.meta?.preBalances,
+              post: tx.meta?.postBalances,
+              fee: tx.meta?.fee,
+            },
+            tokens: {
+              pre: tx.meta?.preTokenBalances,
+              post: tx.meta?.postTokenBalances,
+            },
+          };
+
           // Add complete transaction data as JSON for systematic analysis
           systemMessages.push({
             role: "system",
             content: `=== TRANSACTION DATA ===
 
-${JSON.stringify(tx, null, 2)}
+${JSON.stringify(txSummary, null, 2)}
 
 === END TRANSACTION DATA ===`,
           });
@@ -173,16 +194,14 @@ ${JSON.stringify(tx, null, 2)}
     const result = streamText({
       model: anthropic("claude-haiku-4-5"),
       messages: [...systemMessages, ...convertedMessages],
-      providerOptions: {
-        anthropic: {
-          thinking: { type: "enabled", budgetTokens: 63_000 },
-          disableParallelToolUse: true,
-        },
-      },
-      headers: {
-        "anthropic-beta":
-          "interleaved-thinking-2025-05-14,extended-cache-ttl-2025-04-11",
-      },
+      // providerOptions: {
+      //   anthropic: {
+      //     thinking: { type: "enabled", budgetTokens: 10_000 },
+      //   } satisfies AnthropicProviderOptions,
+      // },
+      // headers: {
+      //   "anthropic-beta": "extended-cache-ttl-2025-04-11",
+      // },
     });
 
     return result.toUIMessageStreamResponse();
