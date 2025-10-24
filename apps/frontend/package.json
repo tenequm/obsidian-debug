@@ -36,6 +36,7 @@
     "@solana/web3.js": "^1.98.4",
     "@t3-oss/env-nextjs": "^0.13.8",
     "@tanstack/react-query": "^5.90.5",
+    "@vercel/analytics": "^1.5.0",
     "ai": "^5.0.77",
     "babel-plugin-react-compiler": "^1.0.0",
     "class-variance-authority": "^0.7.1",

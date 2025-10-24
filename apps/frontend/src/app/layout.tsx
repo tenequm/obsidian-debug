@@ -1,3 +1,4 @@
+import { Analytics } from "@vercel/analytics/next";
 import type { Metadata } from "next";
 import { AppSidebar } from "@/components/app-sidebar";
 import { ReactQueryProvider } from "@/components/react-query-provider";
@@ -82,6 +83,7 @@ export default function RootLayout({
             <SidebarInset>{children}</SidebarInset>
           </SidebarProvider>
         </ReactQueryProvider>
+        <Analytics />
       </body>
     </html>
   );
