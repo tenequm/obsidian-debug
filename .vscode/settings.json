@@ -13,15 +13,15 @@
     "editor.defaultFormatter": "biomejs.biome"
   },
   "files.exclude": {
-    "packages/app/src/app/apple-icon.png": true,
-    "packages/app/src/app/favicon.ico": true,
-    "packages/app/src/app/icon0.svg": true,
-    "packages/app/src/app/icon1.png": true,
-    "packages/app/node_modules": true,
+    "apps/frontend/src/app/apple-icon.png": true,
+    "apps/frontend/src/app/favicon.ico": true,
+    "apps/frontend/src/app/icon0.svg": true,
+    "apps/frontend/src/app/icon1.png": true,
+    "apps/frontend/node_modules": true,
     "node_modules": true,
     ".vercel": true,
-    "packages/app/next-env.d.ts": true,
-    "packages/app/tsconfig.tsbuildinfo": true
+    "apps/frontend/next-env.d.ts": true,
+    "apps/frontend/tsconfig.tsbuildinfo": true
   },
   "[json]": {
     "editor.defaultFormatter": "biomejs.biome"

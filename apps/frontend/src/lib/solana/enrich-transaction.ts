@@ -3,10 +3,12 @@
  * Transforms raw transaction data into structured, human-readable format for AI analysis
  */
 
+import {
+  matchErrorPattern,
+  resolveErrorCode,
+} from "@obsidian-debug/solana-errors";
 import type { Instruction } from "helius-sdk";
 import { publicKeyMappings } from "../xray/config";
-import { resolveErrorCode } from "./error-codes";
-import { matchErrorPattern } from "./error-patterns";
 
 /**
  * Enriched error information with human-readable details

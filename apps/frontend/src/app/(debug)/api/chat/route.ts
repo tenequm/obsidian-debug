@@ -1,3 +1,4 @@
+import { isValidSignature } from "@obsidian-debug/solana-errors";
 import type { TextUIPart, UIMessage } from "ai";
 import { Helius } from "helius-sdk";
 import { env } from "@/env";
@@ -7,7 +8,6 @@ import {
   enrichInstructions,
   parseLogMessages,
 } from "@/lib/solana/enrich-transaction";
-import { isValidSignature } from "@/lib/solana/utils";
 import { parseTransaction } from "@/lib/xray";
 
 export const maxDuration = 60;

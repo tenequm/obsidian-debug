@@ -1,2 +1,2 @@
 pull-env:
-  vercel env pull packages/frontend/.env
+  vercel env pull apps/frontend/.env

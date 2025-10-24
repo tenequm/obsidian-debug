@@ -9,13 +9,13 @@
 
 import * as fs from "node:fs";
 import * as path from "node:path";
-import type { Instruction } from "helius-sdk";
-import { describe, expect, it } from "vitest";
-import { enrichErrorData } from "../src/lib/solana/enrich-transaction";
 import {
   PROGRAM_ERROR_CODES,
   resolveErrorCode,
-} from "../src/lib/solana/error-codes";
+} from "@obsidian-debug/solana-errors";
+import type { Instruction } from "helius-sdk";
+import { describe, expect, it } from "vitest";
+import { enrichErrorData } from "../src/lib/solana/enrich-transaction";
 
 // Load test transaction data
 const testDataPath = path.join(__dirname, "test-transactions.json");

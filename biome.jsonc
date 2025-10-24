@@ -15,7 +15,8 @@
       },
       "performance": {
         "useTopLevelRegex": "off",
-        "noNamespaceImport": "off"
+        "noNamespaceImport": "off",
+        "noBarrelFile": "off"
       },
       "complexity": {
         "noExcessiveCognitiveComplexity": "off"

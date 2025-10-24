@@ -133,7 +133,7 @@ pnpm install
 3. Set up environment variables:
 
 ```bash
-cp .env.example packages/app/.env.local
+cp .env.example apps/frontend/.env.local
 ```
 
 Add your API keys:

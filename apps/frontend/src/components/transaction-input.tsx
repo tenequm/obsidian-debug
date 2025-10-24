@@ -1,5 +1,6 @@
 "use client";
 
+import { isValidSignature } from "@obsidian-debug/solana-errors";
 import { Loader2, Search } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -12,7 +13,6 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { isValidSignature } from "@/lib/solana/utils";
 
 type TransactionInputProps = {
   onAnalyze?: (signature: string) => void;

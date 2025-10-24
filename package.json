@@ -11,10 +11,14 @@
     "check": "turbo type-check && biome check --write",
     "type-check": "turbo type-check",
     "clean": "rm -rf node_modules packages/*/node_modules packages/*/.next",
-    "test": "turbo test"
+    "test": "turbo test",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "turbo build --filter=@obsidian-debug/solana-errors^... && changeset publish"
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.7",
+    "@changesets/cli": "^2.29.7",
     "husky": "^9.1.7",
     "turbo": "^2.5.8",
     "ultracite": "5.6.4"
