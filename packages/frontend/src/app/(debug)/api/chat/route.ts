@@ -2,6 +2,11 @@ import type { TextUIPart, UIMessage } from "ai";
 import { Helius } from "helius-sdk";
 import { env } from "@/env";
 import { transactionDebugger } from "@/lib/ai/agents/transaction-debugger";
+import {
+  enrichErrorData,
+  enrichInstructions,
+  parseLogMessages,
+} from "@/lib/solana/enrich-transaction";
 import { isValidSignature } from "@/lib/solana/utils";
 import { parseTransaction } from "@/lib/xray";
 
@@ -65,6 +70,53 @@ export async function POST(request: Request) {
             "actions"
           );
 
+          // Enrich transaction data with human-readable information
+          let enrichedError: ReturnType<typeof enrichErrorData> = null;
+          let executionFlow: ReturnType<
+            typeof parseLogMessages
+          >["executionFlow"] = [];
+          let programLogs: ReturnType<typeof parseLogMessages>["programLogs"] =
+            [];
+          let enrichedInstructionsList: ReturnType<typeof enrichInstructions> =
+            [];
+
+          try {
+            // Parse log messages for execution flow and structured logs
+            // Type assertion: EnrichedTransaction has logs but TypeScript doesn't know about it
+            const txWithMeta = enrichedTx as unknown as {
+              meta?: { logMessages?: string[] };
+            };
+            const logs = txWithMeta.meta?.logMessages || [];
+
+            // Enrich error data if transaction failed (pass logs for pattern matching)
+            if (enrichedTx.transactionError) {
+              enrichedError = enrichErrorData(
+                enrichedTx.transactionError,
+                enrichedTx.instructions,
+                logs
+              );
+              console.log(
+                "[Transaction Debug] Enriched error:",
+                enrichedError?.errorName || "Unknown"
+              );
+            }
+
+            const parsed = parseLogMessages(logs, enrichedTx.instructions);
+            executionFlow = parsed.executionFlow;
+            programLogs = parsed.programLogs;
+
+            // Enrich instructions with program names
+            enrichedInstructionsList = enrichInstructions(
+              enrichedTx.instructions
+            );
+          } catch (enrichError) {
+            console.error(
+              "[Transaction Debug] Error during enrichment:",
+              enrichError
+            );
+            // Continue with un-enriched data if enrichment fails
+          }
+
           // Create comprehensive transaction summary
           const txSummary = {
             signature: parsedTx.signature,
@@ -75,12 +127,23 @@ export async function POST(request: Request) {
             primaryUser: parsedTx.primaryUser,
             actions: parsedTx.actions,
             accounts: parsedTx.accounts,
-            error: enrichedTx.transactionError || null,
+
+            // Enhanced error information
+            error: enrichedError,
+
+            // Enhanced execution context
+            executionFlow,
+            programLogs,
+
+            // Enhanced instructions
+            instructions: enrichedInstructionsList,
+
+            // Keep original data for reference
+            rawError: enrichedTx.transactionError || null,
             tokenTransfers: enrichedTx.tokenTransfers || [],
             nativeTransfers: enrichedTx.nativeTransfers || [],
             accountData: enrichedTx.accountData || [],
             events: enrichedTx.events,
-            instructions: enrichedTx.instructions,
           };
 
           // Inject transaction data as a system message at the beginning

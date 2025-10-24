@@ -9,6 +9,16 @@
       },
       "style": {
         "noMagicNumbers": "off"
+      },
+      "nursery": {
+        "useConsistentTypeDefinitions": "off"
+      },
+      "performance": {
+        "useTopLevelRegex": "off",
+        "noNamespaceImport": "off"
+      },
+      "complexity": {
+        "noExcessiveCognitiveComplexity": "off"
       }
     }
   },

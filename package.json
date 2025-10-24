@@ -8,9 +8,10 @@
     "build": "turbo build",
     "lint": "biome check",
     "format": "biome check --write",
-    "check": "biome check --write && turbo type-check",
+    "check": "turbo type-check && biome check --write",
     "type-check": "turbo type-check",
-    "clean": "rm -rf node_modules packages/*/node_modules packages/*/.next"
+    "clean": "rm -rf node_modules packages/*/node_modules packages/*/.next",
+    "test": "turbo test"
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.7",
