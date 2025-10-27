@@ -2,7 +2,11 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: "standalone",
-  transpilePackages: ["@t3-oss/env-nextjs", "@t3-oss/env-core"], // ref: https://env.t3.gg/docs/nextjs
+  transpilePackages: [
+    "@t3-oss/env-nextjs",
+    "@t3-oss/env-core",
+    "@obsidian-debug/solana-errors", // Instant dev updates from source
+  ],
   reactCompiler: true,
 
   // Detailed fetch logging for debugging (dev only)

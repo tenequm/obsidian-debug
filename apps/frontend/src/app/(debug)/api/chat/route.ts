@@ -1,4 +1,3 @@
-import { isValidSignature } from "@obsidian-debug/solana-errors";
 import type { TextUIPart, UIMessage } from "ai";
 import { Helius } from "helius-sdk";
 import { env } from "@/env";
@@ -8,6 +7,7 @@ import {
   enrichInstructions,
   parseLogMessages,
 } from "@/lib/solana/enrich-transaction";
+import { isValidSignature } from "@/lib/solana/validators";
 import { parseTransaction } from "@/lib/xray";
 
 export const maxDuration = 60;
@@ -88,12 +88,11 @@ export async function POST(request: Request) {
             };
             const logs = txWithMeta.meta?.logMessages || [];
 
-            // Enrich error data if transaction failed (pass logs for pattern matching)
+            // Enrich error data if transaction failed
             if (enrichedTx.transactionError) {
               enrichedError = enrichErrorData(
                 enrichedTx.transactionError,
-                enrichedTx.instructions,
-                logs
+                enrichedTx.instructions
               );
               console.log(
                 "[Transaction Debug] Enriched error:",

@@ -1,7 +1,6 @@
 "use client";
 
 import { useChat } from "@ai-sdk/react";
-import { isValidSignature } from "@obsidian-debug/solana-errors";
 import type { ToolUIPart } from "ai";
 import type { FormEvent } from "react";
 import { useEffect, useState } from "react";
@@ -42,6 +41,7 @@ import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { isValidSignature } from "@/lib/solana/validators";
 
 const EXAMPLE_TRANSACTION =
   "21TQdryJZpurVh2gFKpUMi6n1ypvvUUzaiUwynPBEbdMULwU5j5d7HiQwvReovoPZdW18bkKbnyKKWY4jUmj9WbT";

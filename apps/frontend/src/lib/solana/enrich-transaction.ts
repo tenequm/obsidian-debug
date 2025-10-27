@@ -3,10 +3,7 @@
  * Transforms raw transaction data into structured, human-readable format for AI analysis
  */
 
-import {
-  matchErrorPattern,
-  resolveErrorCode,
-} from "@obsidian-debug/solana-errors";
+import { registry } from "@obsidian-debug/solana-errors";
 import type { Instruction } from "helius-sdk";
 import { publicKeyMappings } from "../xray/config";
 
@@ -21,14 +18,6 @@ export type EnrichedError = {
   errorCodeDecimal: number;
   errorName: string | null;
   errorDescription: string | null;
-  category: string | null;
-  debugTip: string | null;
-  pattern: {
-    category: string;
-    likelyReason: string;
-    quickFix: string;
-    severity: string;
-  } | null;
   rawError: unknown;
 };
 
@@ -63,8 +52,16 @@ export type ParsedLogs = {
 
 /**
  * Get human-readable program name from address
+ * Prioritizes error library (includes version info) then falls back to xray config
  */
 function getProgramName(programId: string): string {
+  // Try error library first - includes version info (e.g., "Magic Eden V2")
+  const protocol = registry.getByProgramId(programId);
+  if (protocol) {
+    return protocol.name;
+  }
+
+  // Fall back to xray config for programs without IDLs (tokens, system programs, etc.)
   const mappings = publicKeyMappings as Record<string, string>;
   return mappings[programId] || programId;
 }
@@ -74,8 +71,7 @@ function getProgramName(programId: string): string {
  */
 export function enrichErrorData(
   error: unknown,
-  instructions: Instruction[],
-  logs?: string[]
+  instructions: Instruction[]
 ): EnrichedError | null {
   try {
     // Parse InstructionError format: { InstructionError: [index, { Custom: code }] }
@@ -106,10 +102,7 @@ export function enrichErrorData(
         const programName = getProgramName(programId);
 
         // Resolve error code to human-readable name
-        const resolved = resolveErrorCode(programId, errorCode);
-
-        // Match error pattern from logs if available
-        const pattern = logs ? matchErrorPattern(logs.join(" ")) : null;
+        const resolved = registry.resolve(programId, errorCode);
 
         return {
           instructionIndex,
@@ -119,16 +112,6 @@ export function enrichErrorData(
           errorCodeDecimal: errorCode,
           errorName: resolved?.name || null,
           errorDescription: resolved?.description || null,
-          category: resolved?.category || null,
-          debugTip: resolved?.debugTip || null,
-          pattern: pattern
-            ? {
-                category: pattern.category,
-                likelyReason: pattern.likelyReason,
-                quickFix: pattern.quickFix,
-                severity: pattern.severity,
-              }
-            : null,
           rawError: error,
         };
       }
