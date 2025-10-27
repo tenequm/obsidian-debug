@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^2.0.37",
+    "@ai-sdk/google": "^2.0.24",
     "@ai-sdk/react": "^2.0.77",
     "@nifty-oss/asset": "^0.6.1",
     "@obsidian-debug/solana-errors": "workspace:*",

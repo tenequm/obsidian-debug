@@ -1,3 +1,4 @@
+import { Connection } from "@solana/web3.js";
 import type { TextUIPart, UIMessage } from "ai";
 import { Helius } from "helius-sdk";
 import { env } from "@/env";
@@ -7,6 +8,11 @@ import {
   enrichInstructions,
   parseLogMessages,
 } from "@/lib/solana/enrich-transaction";
+import {
+  extractCalledPrograms,
+  fetchProgramMetadata,
+  type ProgramMetadata,
+} from "@/lib/solana/program-metadata";
 import { isValidSignature } from "@/lib/solana/validators";
 import { parseTransaction } from "@/lib/xray";
 
@@ -59,6 +65,22 @@ export async function POST(request: Request) {
             enrichedTx.type || "UNKNOWN"
           );
 
+          // Fetch raw transaction to get program logs
+          // Helius parseTransactions doesn't include meta.logMessages
+          const connection = new Connection(
+            `https://mainnet.helius-rpc.com/?api-key=${env.HELIUS_API_KEY}`
+          );
+          const rawTx = await connection.getTransaction(signature, {
+            maxSupportedTransactionVersion: 0,
+          });
+          const logs = rawTx?.meta?.logMessages || [];
+
+          console.log(
+            "[Transaction Debug] Fetched transaction logs:",
+            logs.length,
+            "entries"
+          );
+
           // Parse transaction with xray to get structured ProtonTransaction
           const parsedTx = parseTransaction(enrichedTx, undefined);
 
@@ -79,15 +101,9 @@ export async function POST(request: Request) {
             [];
           let enrichedInstructionsList: ReturnType<typeof enrichInstructions> =
             [];
+          let programMetadata: ProgramMetadata | null = null;
 
           try {
-            // Parse log messages for execution flow and structured logs
-            // Type assertion: EnrichedTransaction has logs but TypeScript doesn't know about it
-            const txWithMeta = enrichedTx as unknown as {
-              meta?: { logMessages?: string[] };
-            };
-            const logs = txWithMeta.meta?.logMessages || [];
-
             // Enrich error data if transaction failed
             if (enrichedTx.transactionError) {
               enrichedError = enrichErrorData(
@@ -98,11 +114,38 @@ export async function POST(request: Request) {
                 "[Transaction Debug] Enriched error:",
                 enrichedError?.errorName || "Unknown"
               );
+
+              // If error name is unknown (not in registry), fetch program metadata
+              if (enrichedError && !enrichedError.errorName) {
+                console.log(
+                  "[Transaction Debug] Unknown program, fetching metadata..."
+                );
+                programMetadata = await fetchProgramMetadata(
+                  connection,
+                  enrichedError.programId
+                );
+                if (programMetadata) {
+                  console.log(
+                    "[Transaction Debug] Program metadata:",
+                    programMetadata.isUpgradeable
+                      ? `Upgradeable, authority: ${programMetadata.upgradeAuthority}`
+                      : "Not upgradeable"
+                  );
+                }
+              }
             }
 
             const parsed = parseLogMessages(logs, enrichedTx.instructions);
             executionFlow = parsed.executionFlow;
             programLogs = parsed.programLogs;
+
+            console.log(
+              "[Transaction Debug] Parsed logs:",
+              programLogs.length,
+              "program logs,",
+              executionFlow.length,
+              "execution flow entries"
+            );
 
             // Enrich instructions with program names
             enrichedInstructionsList = enrichInstructions(
@@ -136,6 +179,10 @@ export async function POST(request: Request) {
 
             // Enhanced instructions
             instructions: enrichedInstructionsList,
+
+            // Program metadata (for unknown programs)
+            programMetadata,
+            calledPrograms: extractCalledPrograms(executionFlow),
 
             // Keep original data for reference
             rawError: enrichedTx.transactionError || null,
