@@ -1,20 +1,7 @@
-import { Connection } from "@solana/web3.js";
 import type { TextUIPart, UIMessage } from "ai";
-import { Helius } from "helius-sdk";
-import { env } from "@/env";
 import { transactionDebugger } from "@/lib/ai/agents/transaction-debugger";
-import {
-  enrichErrorData,
-  enrichInstructions,
-  parseLogMessages,
-} from "@/lib/solana/enrich-transaction";
-import {
-  extractCalledPrograms,
-  fetchProgramMetadata,
-  type ProgramMetadata,
-} from "@/lib/solana/program-metadata";
 import { isValidSignature } from "@/lib/solana/validators";
-import { parseTransaction } from "@/lib/xray";
+import { getDebugTransaction } from "@/lib/transaction";
 
 export const maxDuration = 60;
 
@@ -53,167 +40,35 @@ export async function POST(request: Request) {
       console.log(`[Transaction Debug] Detected signature: ${signature}`);
 
       try {
-        // Fetch enriched transaction using Helius SDK
-        const helius = new Helius(env.HELIUS_API_KEY);
-        const [enrichedTx] = await helius.parseTransactions({
-          transactions: [signature],
-        });
+        // Fetch and enrich transaction using unified pipeline
+        const debugTx = await getDebugTransaction(signature);
 
-        if (enrichedTx) {
-          console.log(
-            "[Transaction Debug] Fetched enriched transaction:",
-            enrichedTx.type || "UNKNOWN"
-          );
+        console.log(
+          "[Transaction Debug] Enriched transaction:",
+          debugTx.semantic.type,
+          "with error:",
+          debugTx.error?.errorName || "None"
+        );
 
-          // Fetch raw transaction to get program logs
-          // Helius parseTransactions doesn't include meta.logMessages
-          const connection = new Connection(
-            `https://mainnet.helius-rpc.com/?api-key=${env.HELIUS_API_KEY}`
-          );
-          const rawTx = await connection.getTransaction(signature, {
-            maxSupportedTransactionVersion: 0,
-          });
-          const logs = rawTx?.meta?.logMessages || [];
+        // Inject transaction data as a system message
+        messagesWithContext = [
+          {
+            role: "system",
+            parts: [
+              {
+                type: "text",
+                text: `=== PARSED TRANSACTION DATA ===
 
-          console.log(
-            "[Transaction Debug] Fetched transaction logs:",
-            logs.length,
-            "entries"
-          );
-
-          // Parse transaction with xray to get structured ProtonTransaction
-          const parsedTx = parseTransaction(enrichedTx, undefined);
-
-          console.log(
-            "[Transaction Debug] Parsed transaction:",
-            parsedTx.type,
-            "with",
-            parsedTx.actions.length,
-            "actions"
-          );
-
-          // Enrich transaction data with human-readable information
-          let enrichedError: ReturnType<typeof enrichErrorData> = null;
-          let executionFlow: ReturnType<
-            typeof parseLogMessages
-          >["executionFlow"] = [];
-          let programLogs: ReturnType<typeof parseLogMessages>["programLogs"] =
-            [];
-          let enrichedInstructionsList: ReturnType<typeof enrichInstructions> =
-            [];
-          let programMetadata: ProgramMetadata | null = null;
-
-          try {
-            // Enrich error data if transaction failed
-            if (enrichedTx.transactionError) {
-              enrichedError = enrichErrorData(
-                enrichedTx.transactionError,
-                enrichedTx.instructions
-              );
-              console.log(
-                "[Transaction Debug] Enriched error:",
-                enrichedError?.errorName || "Unknown"
-              );
-
-              // If error name is unknown (not in registry), fetch program metadata
-              if (enrichedError && !enrichedError.errorName) {
-                console.log(
-                  "[Transaction Debug] Unknown program, fetching metadata..."
-                );
-                programMetadata = await fetchProgramMetadata(
-                  connection,
-                  enrichedError.programId
-                );
-                if (programMetadata) {
-                  console.log(
-                    "[Transaction Debug] Program metadata:",
-                    programMetadata.isUpgradeable
-                      ? `Upgradeable, authority: ${programMetadata.upgradeAuthority}`
-                      : "Not upgradeable"
-                  );
-                }
-              }
-            }
-
-            const parsed = parseLogMessages(logs, enrichedTx.instructions);
-            executionFlow = parsed.executionFlow;
-            programLogs = parsed.programLogs;
-
-            console.log(
-              "[Transaction Debug] Parsed logs:",
-              programLogs.length,
-              "program logs,",
-              executionFlow.length,
-              "execution flow entries"
-            );
-
-            // Enrich instructions with program names
-            enrichedInstructionsList = enrichInstructions(
-              enrichedTx.instructions
-            );
-          } catch (enrichError) {
-            console.error(
-              "[Transaction Debug] Error during enrichment:",
-              enrichError
-            );
-            // Continue with un-enriched data if enrichment fails
-          }
-
-          // Create comprehensive transaction summary
-          const txSummary = {
-            signature: parsedTx.signature,
-            type: parsedTx.type,
-            timestamp: parsedTx.timestamp,
-            fee: parsedTx.fee,
-            source: parsedTx.source,
-            primaryUser: parsedTx.primaryUser,
-            actions: parsedTx.actions,
-            accounts: parsedTx.accounts,
-
-            // Enhanced error information
-            error: enrichedError,
-
-            // Enhanced execution context
-            executionFlow,
-            programLogs,
-
-            // Enhanced instructions
-            instructions: enrichedInstructionsList,
-
-            // Program metadata (for unknown programs)
-            programMetadata,
-            calledPrograms: extractCalledPrograms(executionFlow),
-
-            // Keep original data for reference
-            rawError: enrichedTx.transactionError || null,
-            tokenTransfers: enrichedTx.tokenTransfers || [],
-            nativeTransfers: enrichedTx.nativeTransfers || [],
-            accountData: enrichedTx.accountData || [],
-            events: enrichedTx.events,
-          };
-
-          // Inject transaction data as a system message at the beginning
-          messagesWithContext = [
-            {
-              role: "system",
-              parts: [
-                {
-                  type: "text",
-                  text: `=== PARSED TRANSACTION DATA ===
-
-${JSON.stringify(txSummary, null, 2)}
+${JSON.stringify(debugTx, null, 2)}
 
 === END TRANSACTION DATA ===`,
-                },
-              ],
-            },
-            ...messages,
-          ];
+              },
+            ],
+          },
+          ...messages,
+        ];
 
-          console.log("[Transaction Debug] Added transaction data to messages");
-        } else {
-          console.log("[Transaction Debug] Transaction not found");
-        }
+        console.log("[Transaction Debug] Added transaction data to messages");
       } catch (error) {
         console.error("[Transaction Debug] Error fetching transaction:", error);
         // Continue without transaction data if fetch fails
