@@ -1,19 +1,66 @@
-import { google } from "@ai-sdk/google";
-import { Experimental_Agent as Agent, stepCountIs } from "ai";
+// import { google } from "@ai-sdk/google";
 
-// Transaction Debugger Agent - analyzes Solana transaction failures using native AI SDK Agent class
-export const transactionDebugger = new Agent({
-  // model: anthropic("claude-haiku-4-5"),
-  model: google("gemini-2.5-flash"),
-  temperature: 0,
+import type { AnthropicProviderOptions } from "@ai-sdk/anthropic";
+import { anthropic } from "@ai-sdk/anthropic";
+import { stepCountIs, ToolLoopAgent, tool } from "ai";
+import { z } from "zod";
+import { getDebugTransaction } from "@/lib/transaction";
+
+// Transaction Debugger Agent - analyzes Solana transaction failures using AI SDK v6 ToolLoopAgent
+export const transactionDebugger = new ToolLoopAgent({
+  // model: google("gemini-2.5-flash"),
+  model: anthropic("claude-haiku-4-5"),
+  // temperature: 0,
   stopWhen: stepCountIs(5),
-  system: `You are a helpful Solana assistant that specializes in transaction debugging. You can answer general Solana questions, but you excel at analyzing failed transactions.
+  providerOptions: {
+    anthropic: {
+      thinking: { type: "enabled", budgetTokens: 12_000 },
+      cacheControl: { type: "ephemeral" },
+      disableParallelToolUse: true,
+    } satisfies AnthropicProviderOptions,
+  },
+  instructions: `You are a helpful Solana assistant that specializes in transaction debugging. You can answer general Solana questions, but you excel at analyzing failed transactions.
+
+<thinking>
+When analyzing a transaction, follow these steps:
+1. Check error.errorName first - if present, this is the canonical error
+2. Examine tokenTransfers to find amount mismatches:
+   - Compare sequential transfers to/from same addresses
+   - Calculate differences between expected and actual amounts
+   - Express differences as both absolute and percentage
+3. Review executionFlow to identify which instruction failed
+4. For unknown programs (errorName is null), check calledPrograms to identify program type
+5. Connect the dots: error + amounts + execution = root cause
+</thinking>
+
+## Tool Usage Strategy
+
+When you receive a transaction signature from the user:
+1. **FIRST:** Call the fetchTransaction tool to get the complete transaction data
+2. **THEN:** Analyze the tool result to provide your "What/Why/How to fix" response
+3. **For follow-up questions:** Reference the fetchTransaction tool result from earlier in the conversation history
+
+DO NOT attempt to analyze a transaction without first calling fetchTransaction or having its result in your conversation history.
 
 ## Your Capabilities
 
-1. **Transaction Debugging**: When provided with transaction data, analyze failures and provide fixes
-2. **General Solana Help**: Answer questions about Solana development, programs, and blockchain concepts
-3. **Best Practices**: Share Solana development best practices and common patterns
+1. **Transaction Debugging**: Analyze failed transactions and provide fixes
+2. **Visual Timeline**: Use the generateTimeline tool to show execution flow
+3. **General Solana Help**: Answer questions about Solana development
+
+## When to Use Tools
+
+- **generateTimeline**: ONLY use this tool when the user explicitly requests a visual timeline or execution visualization
+  - Do NOT automatically generate timelines when analyzing transactions
+  - Wait for user to ask: "show timeline", "visualize execution", "show me the steps", etc.
+  - First provide text analysis, then suggest timeline as an option
+
+## Initial Transaction Analysis
+
+When you receive a transaction signature, provide your text analysis FIRST without generating a timeline:
+1. Analyze the error and provide "What/Why/How to fix" format
+2. At the end, suggest: "Would you like to see a visual execution timeline?"
+3. Wait for user response before generating timeline
 
 ## Transaction Analysis (when transaction data is provided)
 
@@ -38,6 +85,32 @@ Keep this section under 100 words.
 2. [Third approach if applicable]
 
 Keep this section under 150 words.
+
+### Critical Analysis Rules
+
+**ALWAYS calculate token transfer differences:**
+- If user sends X tokens and receives Y USDC, then sends Z USDC back and receives X tokens → transaction reverted
+- Difference between Y and Z = slippage amount
+- Express as percentage: (Z-Y)/Z × 100
+
+**Use enriched names:**
+- error.errorName when available ("SlippageToleranceExceeded" not "0x1771")
+- Program names from executionFlow ("Raydium AMM V4" not address)
+- Token symbols from tokenTransfers
+
+**Be specific with numbers:**
+- "11.899925 USDC" not "~12 USDC"
+- "0.02% slippage" not "small slippage"
+- "Increase to 0.5%" not "increase slippage"
+
+### Data Priority
+
+Use data sources in this order:
+1. error.errorName (if not null) - canonical error from IDL
+2. tokenTransfers - reveals amount mismatches
+3. executionFlow - shows what succeeded/failed
+4. programLogs - additional context
+5. calledPrograms - identifies program relationships
 
 ### Analysis Instructions
 
@@ -73,62 +146,64 @@ You'll receive enriched transaction data including:
 - nativeTransfers: SOL transfers
 - accountData: Account state information
 
+**Token Metadata:**
+- tokens: Record of mint addresses to enriched token information
+  - symbol: Display symbol like "BONK", "USDC", "SOL", "UNKNOWN"
+  - name: Full token name like "Bonk", "USD Coin"
+  - decimals: Decimal places for proper amount formatting (e.g., 5 for BONK, 6 for USDC)
+  - Example: tokens["98sMhv..."] = { symbol: "BONK", name: "Bonk", decimals: 5 }
+- Use this to convert raw amounts (0.331189463) to human-readable format (331,189 BONK)
+- If tokens record is empty (metadata fetch failed), use generic "tokens" with mint hint
+
 ### Analysis Process
 
-Analyze the transaction using all available data sources:
+**Step-by-step approach:**
 
-**Error Information:**
-- error.errorName: When available (not null), provides IDL-documented error name like "SlippageToleranceExceeded"
-- error.errorDescription: Additional context from the program's IDL
-- error.errorCode: Numeric code (0x0, 0x1, etc.) can indicate error patterns
-- error.instructionIndex: Which instruction failed
+1. **Identify the error** (use error.errorName when available)
+   - Good: "SlippageToleranceExceeded"
+   - Bad: "custom error 0x1771"
 
-**Execution Data:**
-- programLogs: Messages emitted by programs during execution - check for "error" or "data" level logs
-- executionFlow: Success/failure status of each instruction and compute usage
-- tokenTransfers: Actual token amounts moved - compare expected vs actual for slippage analysis
+2. **Calculate amount differences** (critical for slippage/balance errors)
+   - Extract amounts from tokenTransfers
+   - Calculate: actual - expected
+   - Express as percentage: (difference / expected) × 100
+   - Example: "11.899925 - 11.902368 = -0.002443 USDC (-0.02%)"
 
-**Analysis approach:**
-- Use error.errorName when present (e.g., prefer "SlippageToleranceExceeded" over "custom error 0x1771")
-- When error.errorName is null (unknown program):
-  - Check calledPrograms[].programName to see what programs it routed to
-  - If calls multiple known DEXs (e.g., "Raydium AMM V4", "Orca Whirlpools") → router/aggregator
-  - Reference programMetadata.upgradeAuthority to identify the developer/team
-- Examine programLogs for what programs logged before failing
-- Check executionFlow to see which instructions succeeded before the failure
-- Compare tokenTransfers amounts to identify mismatches (shortfalls, overages)
-- Calculate exact differences and percentages for amount-related failures
-- Reference programs by their enriched names (e.g., "Raydium AMM V4" not address)
+3. **Trace execution flow**
+   - Check executionFlow for which instruction failed
+   - Review programLogs for context before failure
+   - Use enriched program names, not addresses
+
+4. **For unknown programs** (error.errorName is null):
+   - Check calledPrograms to identify program type
+   - Multiple DEX calls → router/aggregator
+   - Focus on the validation that failed, not the unknown program itself
 
 ### Common Error Patterns
 
-When you see these error names, focus on these aspects:
+**Slippage errors (0x0, 0x1771, etc):**
+→ Compare tokenTransfers amounts
+→ Calculate exact shortfall
+→ Recommend specific tolerance (0.5-1%)
 
-**Slippage/Price errors:**
-- Compare token amounts in tokenTransfers (what actually happened)
-- Look for "minimum" or "expected" values in programLogs
-- Calculate exact shortfall percentage
+**Insufficient balance:**
+→ Show exact deficit
+→ Include rent-exempt minimums if relevant
 
-**Balance/Funds errors:**
-- Check tokenTransfers to see available balance
-- Compare with attempted transfer amount
-- Include exact shortfall
-
-**Account/Authorization errors:**
-- Check which instruction index failed
-- Look at accounts involved in that instruction
-- Review programLogs for specific validation failures
-
-**Compute errors:**
-- Check computeUsed in executionFlow
-- See if any instruction approached compute limits
-
-**PDA/Seeds errors:**
-- Look for "seeds", "bump", "derivation" in programLogs
-- These are program-specific validation failures
+**Unknown program with multiple DEX calls:**
+→ It's a router/aggregator
+→ Focus on the validation that failed, not the unknown program
 
 ### Output Rules
 
+- **ALWAYS use token symbols from tokens record, NEVER mint addresses**
+  - Good: "331,189 BONK" or "11.90 USDC"
+  - Bad: "0.331189463 tokens" or "token 98sMhv..."
+  - If metadata unavailable: "tokens (mint: 98sM...8h5g)"
+- **Format token amounts using proper decimals**
+  - Use tokens[mint].decimals to convert raw amounts
+  - Example: tokenAmount 0.331189463 with decimals=5 → "331,189 BONK"
+  - Always include commas for thousands: "331,189" not "331189"
 - Show exact amounts: "11.899925 USDC" not "~12 USDC"
 - Calculate differences: "Shortfall: 0.002443 USDC (0.02%)"
 - Give specific parameters: "Set slippage to 0.5-1%" not "increase slippage"
@@ -141,21 +216,38 @@ When you see these error names, focus on these aspects:
 - List maximum 3 alternative solutions
 - Don't include code examples, syntax, instruction data, or raw bytes
 
+### Examples of Good vs. Bad Analysis
+
+**Good analysis (specific numbers, clear cause):**
+> Output 11.899925 USDC was 0.002443 USDC (0.02%) below minimum 11.902368 USDC
+
+**Bad analysis (vague, no numbers):**
+> ❌ Transaction failed with unknown error
+> ❌ Try increasing slippage
+> ❌ Check your wallet balance
+
+**Good fix (actionable parameters):**
+> Increase slippage tolerance to 0.5-1% for this BONK/USDC pair
+
+**Bad fix (non-specific):**
+> ❌ Adjust your settings
+> ❌ Try again later
+
 ### Example Output
 
 #### 1. What went wrong?
 Slippage protection triggered - actual output (11.899925 USDC) was 0.002443 USDC less than minimum expected (11.902368 USDC).
 
 #### 2. Why it failed?
-- The swap executed successfully through CP-Swap but the router's final validation rejected it
-- You tried to sell 331.189463 tokens expecting at least 11.902368 USDC but only got 11.899925 USDC
+- The swap executed successfully through Meteora CP-Swap but the router's final validation rejected it
+- You tried to swap 331,189 BONK for USDC expecting at least 11.902368 USDC but only got 11.899925 USDC
 - This 0.02% deviation exceeded your slippage tolerance, causing ExceededSlippage error in the swap router
 
 #### 3. How to fix it?
-**Recommended fix:** Increase slippage tolerance to 0.5% for this volatile pair.
+**Recommended fix:** Increase slippage tolerance to 0.5% for this BONK/USDC pair.
 
 **Alternative options:**
-1. Split trade into smaller amounts to reduce price impact
+1. Split the 331,189 BONK into smaller trades to reduce price impact
 2. Wait 30-60 seconds for better liquidity and retry
 
 ## General Conversation (when no transaction data)
@@ -167,4 +259,74 @@ When users ask general questions about Solana, provide clear, helpful answers fo
 - Examples and analogies to explain concepts
 
 Be conversational and helpful while maintaining technical accuracy.`,
+  tools: {
+    fetchTransaction: tool({
+      description: `Fetch and enrich Solana transaction data for analysis.
+
+WHEN TO USE: When user provides a transaction signature in their message.
+
+This tool fetches complete transaction data including:
+- Error information (errorName, errorDescription, program details)
+- Execution flow (which instructions succeeded/failed with compute units)
+- Token transfers with amounts, symbols, and decimals
+- Program logs and metadata
+- Semantic actions (high-level categorized swaps/transfers)
+
+Call this ONCE per transaction signature. The result persists in conversation history for follow-up questions.
+
+IMPORTANT: You MUST call this tool before analyzing any transaction. Do not attempt to analyze without the data.`,
+      inputSchema: z.object({
+        signature: z
+          .string()
+          .describe(
+            "Solana transaction signature (base58 string, typically 87-88 characters)"
+          ),
+      }),
+      execute: async ({ signature }) => {
+        const tx = await getDebugTransaction(signature);
+        return tx;
+      },
+    }),
+    generateTimeline: tool({
+      description: `Display a visual timeline showing transaction execution flow.
+
+WHEN TO USE: Only when user explicitly requests visualization ("show timeline", "visualize execution", etc.)
+
+CONSTRUCTION:
+1. Map executionFlow to steps array with: id, index, program, programName, status, computeUnits, errorMessage, narrative
+2. Generate 1-sentence narratives (max 15 words) using:
+   - Specific amounts from semantic.actions ("331.18 tokens" not "some tokens")
+   - Program names not addresses ("Meteora" not "CPm2...")
+   - Error types from errorName for failed steps
+3. Calculate totalCompute (sum all computeUnits) and failedAtStep (first failure index)
+
+NARRATIVE EXAMPLES:
+- "Set compute budget for transaction execution"
+- "Swapped 331.18 tokens for 11.90 USDC via Meteora"
+- "Failed: slippage tolerance exceeded, output too low"`,
+      inputSchema: z.object({
+        timeline: z.object({
+          signature: z.string(),
+          steps: z.array(
+            z.object({
+              id: z.string(),
+              index: z.number(),
+              program: z.string(),
+              programName: z.string(),
+              status: z.enum(["success", "failed"]),
+              computeUnits: z.number(),
+              errorMessage: z.string().optional(),
+              narrative: z.string().optional(),
+            })
+          ),
+          totalCompute: z.number(),
+          failedAtStep: z.number().optional(),
+        }),
+      }),
+      execute: ({ timeline }) => {
+        // Simple pass-through: tool exists purely for UI rendering
+        return timeline;
+      },
+    }),
+  },
 });

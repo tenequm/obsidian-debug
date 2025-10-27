@@ -27,14 +27,14 @@ importers:
   apps/frontend:
     dependencies:
       '@ai-sdk/anthropic':
-        specifier: ^2.0.37
-        version: 2.0.37(zod@4.1.12)
+        specifier: 3.0.0-beta.43
+        version: 3.0.0-beta.43(zod@4.1.12)
       '@ai-sdk/google':
-        specifier: ^2.0.24
-        version: 2.0.24(zod@4.1.12)
+        specifier: 3.0.0-beta.33
+        version: 3.0.0-beta.33(zod@4.1.12)
       '@ai-sdk/react':
-        specifier: ^2.0.77
-        version: 2.0.77(react@19.2.0)(zod@4.1.12)
+        specifier: 3.0.0-beta.80
+        version: 3.0.0-beta.80(react@19.2.0)(zod@4.1.12)
       '@nifty-oss/asset':
         specifier: ^0.6.1
         version: 0.6.1(@metaplex-foundation/umi@0.9.2)
@@ -96,8 +96,8 @@ importers:
         specifier: ^1.5.0
         version: 1.5.0(next@16.0.0(@opentelemetry/api@1.9.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react@19.2.0)
       ai:
-        specifier: ^5.0.77
-        version: 5.0.77(zod@4.1.12)
+        specifier: 6.0.0-beta.80
+        version: 6.0.0-beta.80(zod@4.1.12)
       babel-plugin-react-compiler:
         specifier: ^1.0.0
         version: 1.0.0
@@ -213,49 +213,49 @@ packages:
   '@adraffy/ens-normalize@1.10.1':
     resolution: {integrity: sha512-96Z2IP3mYmF1Xg2cDm8f1gWGf/HUVedQ3FMifV4kG/PQ4yEP51xDtRAEfhVNt5f/uzpNkZHwWQuUcu6D6K+Ekw==}
 
-  '@ai-sdk/anthropic@2.0.37':
-    resolution: {integrity: sha512-r2e9BWoobisH9B5b7x3yYG/k9WlsZqa4D94o7gkwktReqrjjv83zNMop4KmlJsh/zBhbsaP8S8SUfiwK+ESxgg==}
+  '@ai-sdk/anthropic@3.0.0-beta.43':
+    resolution: {integrity: sha512-RXlCOTXFqSC4rNuO7NwHllqJgDbrEOriHiBLdlkyQJmyvRAjENu+eKDGdMHh/8uXcSJuiXz9D9WBTG3gdC0CBg==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
 
-  '@ai-sdk/gateway@2.0.0':
-    resolution: {integrity: sha512-Gj0PuawK7NkZuyYgO/h5kDK/l6hFOjhLdTq3/Lli1FTl47iGmwhH1IZQpAL3Z09BeFYWakcwUmn02ovIm2wy9g==}
+  '@ai-sdk/gateway@2.0.0-beta.43':
+    resolution: {integrity: sha512-gL9hyRxIaTWOmINuskAJ5v8ltIbWsNXWuw+Z8MTahWMvKH4nEcbXMy8DOGqaGoT5Zn+7NS39GzuSxeFp3w5rxQ==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
 
-  '@ai-sdk/google@2.0.24':
-    resolution: {integrity: sha512-GUNj1fo+q/JHDB2d1zIEULPt/EvwhGs8MIDo7PEEsuMcNyFwXzc80IUlTvFRUNy0tiZ6kBRw40dRU/hJRx5zQg==}
+  '@ai-sdk/google@3.0.0-beta.33':
+    resolution: {integrity: sha512-76ExkXBEAmAxD3wQisJKYVEVfPqXqp75122KQfuGfuoTMBmRwN/g+WcmjRrrp9MB9Fj9kwLUVMkeaUx/BBmV4g==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
 
-  '@ai-sdk/provider-utils@3.0.12':
-    resolution: {integrity: sha512-ZtbdvYxdMoria+2SlNarEk6Hlgyf+zzcznlD55EAl+7VZvJaSg2sqPvwArY7L6TfDEDJsnCq0fdhBSkYo0Xqdg==}
+  '@ai-sdk/provider-utils@4.0.0-beta.26':
+    resolution: {integrity: sha512-s+SBYUbXm/BD8w5jXEJpZ7dOUpazp8B8WxQg1nUc/ObHAnf5ynVocNuKYDcKHhYbh75fwbCauMl9G1P1ZZkvhg==}
     engines: {node: '>=18'}
     peerDependencies:
+      '@valibot/to-json-schema': ^1.3.0
+      arktype: ^2.1.22
+      effect: ^3.18.4
       zod: ^3.25.76 || ^4.1.8
+    peerDependenciesMeta:
+      '@valibot/to-json-schema':
+        optional: true
+      arktype:
+        optional: true
+      effect:
+        optional: true
 
-  '@ai-sdk/provider-utils@3.0.13':
-    resolution: {integrity: sha512-aXFLBLRPTUYA853MJliItefSXeJPl+mg0KSjbToP41kJ+banBmHO8ZPGLJhNqGlCU82o11TYN7G05EREKX8CkA==}
+  '@ai-sdk/provider@3.0.0-beta.12':
+    resolution: {integrity: sha512-Fd99yLeJ0Idh4TZ2UeVzyedhHBbekAzhnkY0o8Eqb5abzi0wiS8i7yyiC9PRVPra6lxfUgQcqxk+yf9xnn2k2A==}
     engines: {node: '>=18'}
-    peerDependencies:
-      zod: ^3.25.76 || ^4.1.8
 
-  '@ai-sdk/provider@2.0.0':
-    resolution: {integrity: sha512-6o7Y2SeO9vFKB8lArHXehNuusnpddKPk7xqL7T2/b+OvXMRIXUO1rR4wcv1hAFUAT9avGZshty3Wlua/XA7TvA==}
-    engines: {node: '>=18'}
-
-  '@ai-sdk/react@2.0.77':
-    resolution: {integrity: sha512-nL3xaSGEJAdT8tIj+dRA3WtoqqfBncQ2uV7chV6usFDCPQlvpYukzbr5+v4oK86AEZCs/LSnNlKnqSDa0aTfhg==}
+  '@ai-sdk/react@3.0.0-beta.80':
+    resolution: {integrity: sha512-7oTEcMopxCu9GKLOkhZv0gs5HGL9gG43Br2kqXggjhLBXd2R/3ighK1yvTCx5peushvIU2UAYeos0dXd2F2YvQ==}
     engines: {node: '>=18'}
     peerDependencies:
       react: ^18 || ^19 || ^19.0.0-rc
-      zod: ^3.25.76 || ^4.1.8
-    peerDependenciesMeta:
-      zod:
-        optional: true
 
   '@alloc/quick-lru@5.2.0':
     resolution: {integrity: sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw==}
@@ -1977,8 +1977,8 @@ packages:
     resolution: {integrity: sha512-kja8j7PjmncONqaTsB8fQ+wE2mSU2DJ9D4XKoJ5PFWIdRMa6SLSN1ff4mOr4jCbfRSsxR4keIiySJU0N9T5hIQ==}
     engines: {node: '>= 8.0.0'}
 
-  ai@5.0.77:
-    resolution: {integrity: sha512-w0xP/guV27qLUR+60ru7dSDfF1Wlk6lPEHtXPBLfa8TNQ8Qc4FZ1RE9UGAdZmZU396FA6lKtP9P89Jzb5Z+Hnw==}
+  ai@6.0.0-beta.80:
+    resolution: {integrity: sha512-GCHpMK2A2GWUnfPNDqAogf/ag1XuruCuYhFlFZ3RRgoO5hxMeWdOoc0qLbDmpKaHhqC/accix9I9jvCpw6ktJg==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
@@ -4356,52 +4356,60 @@ snapshots:
 
   '@adraffy/ens-normalize@1.10.1': {}
 
-  '@ai-sdk/anthropic@2.0.37(zod@4.1.12)':
+  '@ai-sdk/anthropic@3.0.0-beta.43(zod@4.1.12)':
     dependencies:
-      '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.12(zod@4.1.12)
+      '@ai-sdk/provider': 3.0.0-beta.12
+      '@ai-sdk/provider-utils': 4.0.0-beta.26(zod@4.1.12)
       zod: 4.1.12
+    transitivePeerDependencies:
+      - '@valibot/to-json-schema'
+      - arktype
+      - effect
 
-  '@ai-sdk/gateway@2.0.0(zod@4.1.12)':
+  '@ai-sdk/gateway@2.0.0-beta.43(zod@4.1.12)':
     dependencies:
-      '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.12(zod@4.1.12)
+      '@ai-sdk/provider': 3.0.0-beta.12
+      '@ai-sdk/provider-utils': 4.0.0-beta.26(zod@4.1.12)
       '@vercel/oidc': 3.0.3
       zod: 4.1.12
+    transitivePeerDependencies:
+      - '@valibot/to-json-schema'
+      - arktype
+      - effect
 
-  '@ai-sdk/google@2.0.24(zod@4.1.12)':
+  '@ai-sdk/google@3.0.0-beta.33(zod@4.1.12)':
     dependencies:
-      '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.13(zod@4.1.12)
+      '@ai-sdk/provider': 3.0.0-beta.12
+      '@ai-sdk/provider-utils': 4.0.0-beta.26(zod@4.1.12)
       zod: 4.1.12
+    transitivePeerDependencies:
+      - '@valibot/to-json-schema'
+      - arktype
+      - effect
 
-  '@ai-sdk/provider-utils@3.0.12(zod@4.1.12)':
+  '@ai-sdk/provider-utils@4.0.0-beta.26(zod@4.1.12)':
     dependencies:
-      '@ai-sdk/provider': 2.0.0
+      '@ai-sdk/provider': 3.0.0-beta.12
       '@standard-schema/spec': 1.0.0
       eventsource-parser: 3.0.6
       zod: 4.1.12
 
-  '@ai-sdk/provider-utils@3.0.13(zod@4.1.12)':
-    dependencies:
-      '@ai-sdk/provider': 2.0.0
-      '@standard-schema/spec': 1.0.0
-      eventsource-parser: 3.0.6
-      zod: 4.1.12
-
-  '@ai-sdk/provider@2.0.0':
+  '@ai-sdk/provider@3.0.0-beta.12':
     dependencies:
       json-schema: 0.4.0
 
-  '@ai-sdk/react@2.0.77(react@19.2.0)(zod@4.1.12)':
+  '@ai-sdk/react@3.0.0-beta.80(react@19.2.0)(zod@4.1.12)':
     dependencies:
-      '@ai-sdk/provider-utils': 3.0.12(zod@4.1.12)
-      ai: 5.0.77(zod@4.1.12)
+      '@ai-sdk/provider-utils': 4.0.0-beta.26(zod@4.1.12)
+      ai: 6.0.0-beta.80(zod@4.1.12)
       react: 19.2.0
       swr: 2.3.6(react@19.2.0)
       throttleit: 2.1.0
-    optionalDependencies:
-      zod: 4.1.12
+    transitivePeerDependencies:
+      - '@valibot/to-json-schema'
+      - arktype
+      - effect
+      - zod
 
   '@alloc/quick-lru@5.2.0': {}
 
@@ -6122,13 +6130,17 @@ snapshots:
     dependencies:
       humanize-ms: 1.2.1
 
-  ai@5.0.77(zod@4.1.12):
+  ai@6.0.0-beta.80(zod@4.1.12):
     dependencies:
-      '@ai-sdk/gateway': 2.0.0(zod@4.1.12)
-      '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.12(zod@4.1.12)
+      '@ai-sdk/gateway': 2.0.0-beta.43(zod@4.1.12)
+      '@ai-sdk/provider': 3.0.0-beta.12
+      '@ai-sdk/provider-utils': 4.0.0-beta.26(zod@4.1.12)
       '@opentelemetry/api': 1.9.0
       zod: 4.1.12
+    transitivePeerDependencies:
+      - '@valibot/to-json-schema'
+      - arktype
+      - effect
 
   ansi-colors@4.1.3: {}
 

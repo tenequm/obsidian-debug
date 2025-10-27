@@ -15,9 +15,9 @@
     "test:prompt": "tsx tests/test-prompt.ts"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "^2.0.37",
-    "@ai-sdk/google": "^2.0.24",
-    "@ai-sdk/react": "^2.0.77",
+    "@ai-sdk/anthropic": "3.0.0-beta.43",
+    "@ai-sdk/google": "3.0.0-beta.33",
+    "@ai-sdk/react": "3.0.0-beta.80",
     "@nifty-oss/asset": "^0.6.1",
     "@obsidian-debug/solana-errors": "workspace:*",
     "@onsol/tldparser": "^1.0.8",
@@ -38,7 +38,7 @@
     "@t3-oss/env-nextjs": "^0.13.8",
     "@tanstack/react-query": "^5.90.5",
     "@vercel/analytics": "^1.5.0",
-    "ai": "^5.0.77",
+    "ai": "6.0.0-beta.80",
     "babel-plugin-react-compiler": "^1.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

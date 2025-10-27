@@ -1,0 +1,15 @@
+{
+  "servers": [
+    {
+      "extensions": ["js", "ts", "jsx", "tsx"],
+      "command": ["typescript-language-server", "--stdio"],
+      "rootDir": ".",
+      "initializationOptions": {
+        "preferences": {
+          "includeCompletionsForModuleExports": true,
+          "includePackageJsonAutoImports": "auto"
+        }
+      }
+    }
+  ]
+}

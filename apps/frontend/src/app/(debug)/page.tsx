@@ -38,10 +38,14 @@ import {
   ToolOutput,
 } from "@/components/ai-elements/tool";
 import { PageHeader } from "@/components/page-header";
+import { Timeline } from "@/components/timeline";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 import { isValidSignature } from "@/lib/solana/validators";
+import type { TransactionTimeline } from "@/lib/timeline/types";
 
 const EXAMPLE_TRANSACTION =
   "21TQdryJZpurVh2gFKpUMi6n1ypvvUUzaiUwynPBEbdMULwU5j5d7HiQwvReovoPZdW18bkKbnyKKWY4jUmj9WbT";
@@ -50,6 +54,7 @@ export default function DebugPage() {
   const { messages, status, sendMessage, setMessages } = useChat();
   const [signature, setSignature] = useState("");
   const [signatureError, setSignatureError] = useState("");
+  const [showTimelineSuggestion, setShowTimelineSuggestion] = useState(false);
 
   // Handle new debug session event from sidebar
   useEffect(() => {
@@ -57,6 +62,7 @@ export default function DebugPage() {
       setMessages([]);
       setSignature("");
       setSignatureError("");
+      setShowTimelineSuggestion(false);
     };
 
     window.addEventListener("new-debug-session", handleNewDebugSession);
@@ -65,6 +71,18 @@ export default function DebugPage() {
     };
   }, [setMessages]);
 
+  // Show timeline suggestion after assistant completes response
+  useEffect(() => {
+    const lastMessage = messages.at(-1);
+    const isAssistantMessage = lastMessage?.role === "assistant";
+    const isNotStreaming = status !== "streaming" && status !== "submitted";
+    const hasTextContent = lastMessage?.parts?.some((p) => p.type === "text");
+
+    if (isAssistantMessage && isNotStreaming && hasTextContent) {
+      setShowTimelineSuggestion(true);
+    }
+  }, [messages, status]);
+
   const handleSubmit = (
     message: PromptInputMessage,
     e: FormEvent<HTMLFormElement>
@@ -72,6 +90,7 @@ export default function DebugPage() {
     e.preventDefault();
     if (message.text?.trim()) {
       sendMessage({ text: message.text });
+      setShowTimelineSuggestion(false); // Hide suggestion when user sends message
     }
   };
 
@@ -204,6 +223,7 @@ export default function DebugPage() {
                       if (part.type === "reasoning") {
                         return (
                           <Reasoning
+                            defaultOpen={false}
                             isStreaming={isLoading}
                             key={`${message.id}-reasoning-${partIndex}`}
                           >
@@ -211,6 +231,75 @@ export default function DebugPage() {
                             <ReasoningContent>{part.text}</ReasoningContent>
                           </Reasoning>
                         );
+                      }
+
+                      // Timeline tool rendering (before generic tool handler)
+                      if (part.type === "tool-generateTimeline") {
+                        const toolPart = part as ToolUIPart;
+                        switch (toolPart.state) {
+                          case "input-available":
+                            return (
+                              <div
+                                className="mb-4"
+                                key={`${message.id}-timeline-${partIndex}`}
+                              >
+                                <Card className="p-6">
+                                  <div className="mb-6">
+                                    <Skeleton className="mb-2 h-6 w-full max-w-xs" />
+                                    <div className="mt-2 flex flex-wrap items-center gap-4">
+                                      <Skeleton className="h-4 w-20" />
+                                      <Skeleton className="h-4 w-1 rounded-full" />
+                                      <Skeleton className="h-4 w-28" />
+                                    </div>
+                                  </div>
+                                  <div className="space-y-0">
+                                    {[1, 2, 3].map((i) => (
+                                      <div
+                                        className="relative mb-4 flex gap-4"
+                                        key={i}
+                                      >
+                                        <Skeleton className="h-8 w-8 shrink-0 rounded-full" />
+                                        <Card className="flex-1 p-4">
+                                          <Skeleton className="mb-2 h-4 w-28" />
+                                          <Skeleton className="mb-2 h-5 w-44" />
+                                          <Skeleton className="h-4 w-full" />
+                                        </Card>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </Card>
+                              </div>
+                            );
+                          case "output-available":
+                            return (
+                              <div
+                                className="mb-4"
+                                key={`${message.id}-timeline-${partIndex}`}
+                              >
+                                <Timeline
+                                  timeline={
+                                    toolPart.output as TransactionTimeline
+                                  }
+                                />
+                              </div>
+                            );
+                          case "output-error":
+                            return (
+                              <div
+                                className="mb-4"
+                                key={`${message.id}-timeline-${partIndex}`}
+                              >
+                                <Card className="border-destructive p-4">
+                                  <p className="text-destructive text-sm">
+                                    Failed to generate timeline:{" "}
+                                    {toolPart.errorText}
+                                  </p>
+                                </Card>
+                              </div>
+                            );
+                          default:
+                            return null;
+                        }
                       }
 
                       if (part.type.startsWith("tool-")) {
@@ -259,6 +348,27 @@ export default function DebugPage() {
           </ConversationContent>
           <ConversationScrollButton />
         </Conversation>
+
+        {showTimelineSuggestion && messages.length > 0 && (
+          <div className="border-t bg-muted/30 px-4 py-3">
+            <div className="mx-auto w-full max-w-4xl">
+              <p className="mb-2 text-muted-foreground text-xs">
+                Suggested action:
+              </p>
+              <Suggestions>
+                <Suggestion
+                  onClick={() => {
+                    sendMessage({ text: "Show me a visual timeline" });
+                    setShowTimelineSuggestion(false);
+                  }}
+                  suggestion="Show timeline"
+                >
+                  Show timeline
+                </Suggestion>
+              </Suggestions>
+            </div>
+          </div>
+        )}
 
         {messages.length > 0 && (
           <div className="shrink-0">

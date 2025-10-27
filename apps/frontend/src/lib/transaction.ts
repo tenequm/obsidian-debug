@@ -19,6 +19,14 @@ import { publicKeyMappings } from "./xray/config";
 // TYPES
 // =============================================================================
 
+export interface TokenMetadata {
+  mint: string;
+  symbol: string;
+  name: string;
+  decimals: number;
+  logoURI?: string;
+}
+
 export interface DebugTransaction {
   // Core identifiers
   signature: string;
@@ -64,6 +72,9 @@ export interface DebugTransaction {
     tokens: TokenTransfer[];
     native: NativeTransfer[];
   };
+
+  // Token metadata (enriched from Helius DAS API)
+  tokens: Record<string, TokenMetadata>;
 
   // Additional context
   metadata: {
@@ -233,6 +244,8 @@ function normalizeTransaction(
       tokens: (heliusTx.tokenTransfers as TokenTransfer[]) || [],
       native: (heliusTx.nativeTransfers as NativeTransfer[]) || [],
     },
+
+    tokens: {}, // Will be enriched
 
     metadata: {
       accountData: heliusTx.accountData || [],
@@ -512,8 +525,48 @@ function extractCalledPrograms(
   return programs;
 }
 
+async function enrichTokenMetadata(
+  helius: Helius,
+  tokenTransfers: TokenTransfer[]
+): Promise<Record<string, TokenMetadata>> {
+  if (tokenTransfers.length === 0) {
+    return {};
+  }
+
+  // Extract unique mints from token transfers
+  const uniqueMints = [...new Set(tokenTransfers.map((t) => t.mint))];
+
+  try {
+    // Fetch metadata for all tokens in batch using Helius DAS API
+    const response = await helius.rpc.getAssetBatch({
+      ids: uniqueMints,
+    });
+
+    const metadata: Record<string, TokenMetadata> = {};
+
+    for (const asset of response) {
+      if (asset) {
+        metadata[asset.id] = {
+          mint: asset.id,
+          symbol: asset.content?.metadata?.symbol || "UNKNOWN",
+          name: asset.content?.metadata?.name || "Unknown Token",
+          decimals: asset.token_info?.decimals ?? 9,
+          logoURI: asset.content?.links?.image,
+        };
+      }
+    }
+
+    return metadata;
+  } catch (error) {
+    console.error("Failed to fetch token metadata:", error);
+    // Return empty object on failure - AI will use addresses as fallback
+    return {};
+  }
+}
+
 async function enrichTransaction(
-  tx: DebugTransaction
+  tx: DebugTransaction,
+  helius: Helius
 ): Promise<DebugTransaction> {
   // Parse execution flow from logs
   const { executionFlow, programLogs } = parseLogMessages(tx.execution.logs);
@@ -574,6 +627,10 @@ async function enrichTransaction(
     }
   }
 
+  // Enrich token metadata
+  const tokenMetadata = await enrichTokenMetadata(helius, tx.transfers.tokens);
+  tx.tokens = tokenMetadata;
+
   return tx;
 }
 
@@ -590,8 +647,9 @@ export async function getDebugTransaction(
   // 2. Normalize to canonical DebugTransaction
   const normalized = normalizeTransaction(heliusTx, rawTx);
 
-  // 3. Enrich with registry data and execution analysis
-  const enriched = await enrichTransaction(normalized);
+  // 3. Enrich with registry data, execution analysis, and token metadata
+  const helius = new Helius(env.HELIUS_API_KEY);
+  const enriched = await enrichTransaction(normalized, helius);
 
   return enriched;
 }
