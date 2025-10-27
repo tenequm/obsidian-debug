@@ -1,196 +1,155 @@
 # Obsidian Debug
 
-AI-powered transaction error analysis for Solana developers. Instantly understand why transactions fail and get actionable fixes.
+AI-powered Solana transaction debugger. Analyzes failed transactions and provides actionable fixes.
 
 [![Built on Solana](https://img.shields.io/badge/Built%20on-Solana-blueviolet)](https://solana.com)
 [![Hackathon](https://img.shields.io/badge/Colosseum-Cypherpunk%202025-yellow)](https://www.colosseum.org/cypherpunk)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-## 🌐 Demo
+## Live Demo
 
-**[soldebug.dev](https://soldebug.dev)** - Live debugger
+**[soldebug.dev](https://soldebug.dev)**
 
-> ⚠️ **Development Status**: Active development for Colosseum Cypherpunk Hackathon. Core features in progress.
+## Overview
 
-## 🚨 The Problem
+Solana transaction errors are cryptic (`custom program error: 0x1772`, `InstructionError: [2, Custom(6001)]`). This tool translates them into human-readable explanations with specific fixes.
 
-**800+ million Solana transactions fail annually** with cryptic error messages like:
+**Key features:**
+- **1,786 error definitions** from 41 protocols (extracted directly from IDLs)
+- **Multi-source parsing**: Helius (semantic) + raw RPC (blockchain order)
+- **AI-powered analysis**: Gemini 2.5 Flash for root cause identification
+- **Instruction ordering fix**: Correctly maps errors using blockchain order (not Helius reordered)
 
-- `custom program error: 0x1772`
-- `Transaction simulation failed: Error processing Instruction 0`
-- `Program failed to complete`
+## Error Database
 
-Developers waste **30+ minutes per error** manually:
+Standalone `@obsidian-debug/solana-errors` package covering:
 
-1. Searching through program logs
-2. Decoding hex error codes
-3. Checking documentation across multiple protocols
-4. Trial-and-error fixing parameters
+| Category | Protocols | Error Count |
+|----------|-----------|-------------|
+| DeFi & Swaps | Jupiter, Raydium, Meteora, Orca, Phoenix, OpenBook, Serum | 526 |
+| Meme Tokens | Pump.fun, Moonshot, Boop, Heaven, BonkSwap | 222 |
+| NFTs | Metaplex (Token Metadata, Candy Machine, Bubblegum, etc.) | 604 |
+| Infrastructure | SPL Token, Token-2022, Drift, Anchor Framework | 434 |
 
-## ⚡ The Solution
+All errors extracted from official program IDLs for 100% accuracy.
 
-**Paste any failed transaction hash → Get instant analysis:**
-
-- Human-readable error explanation
-- Root cause identification
-- Exact steps to fix
-- Code snippets for corrected transaction
-
-**30 minutes → 30 seconds**
-
-## ✨ Features
-
-### 🔍 Instant Error Translation
-
-Transform cryptic error codes into plain English explanations powered by Claude AI.
-
-### 🎯 Actionable Fix Suggestions
-
-Get specific, step-by-step instructions to resolve transaction failures.
-
-### 🧠 Pattern Learning
-
-Built-in library of common Solana errors across major protocols:
-
-- Jupiter (DEX aggregation)
-- Raydium (AMM)
-- Orca (liquidity pools)
-- Token Program errors
-- Account validation failures
-
-### 🔧 Smart Transaction Analysis
-
-- Parse transaction logs and instruction data
-- Identify failing program and instruction
-- Extract relevant error context
-- Cross-reference with known error patterns
-
-### 🚀 Future Features (Roadmap)
-
-- "Fix Transaction" button to generate corrected transaction
-- Wallet integration for direct retry
-- Historical debugging sessions
-- Browser extension for inline Solscan/SolanaFM integration
-- API for programmatic access
-
-## 🏗️ Architecture
+## Architecture
 
 ```
-┌─────────────────────────────────────┐
-│   Transaction Hash Input            │
-│   (Mainnet/Devnet/Testnet)          │
-└──────────────┬──────────────────────┘
-               │
-               ▼
-┌─────────────────────────────────────┐
-│   Solana RPC                        │
-│   • Fetch transaction data          │
-│   • Extract logs & error codes      │
-│   • Parse instruction details       │
-└──────────────┬──────────────────────┘
-               │
-               ▼
-┌─────────────────────────────────────┐
-│   Pattern Matching Engine           │
-│   • Check against known errors      │
-│   • Identify program & instruction  │
-└──────────────┬──────────────────────┘
-               │
-               ▼
-┌─────────────────────────────────────┐
-│   Claude AI Analysis                │
-│   • Parse complex errors            │
-│   • Generate fix suggestions        │
-│   • Provide code snippets           │
-└──────────────┬──────────────────────┘
-               │
-               ▼
-┌─────────────────────────────────────┐
-│   Results Display                   │
-│   • Error explanation               │
-│   • Fix steps                       │
-│   • Code examples                   │
-└─────────────────────────────────────┘
+Transaction Signature
+        ↓
+Multi-Source Fetch (parallel)
+├── Helius SDK → semantic data
+└── Raw RPC → blockchain order
+        ↓
+Three-Stage Pipeline
+├── 1. FETCH
+├── 2. NORMALIZE → DebugTransaction
+└── 3. ENRICH → error resolution, log parsing, program metadata
+        ↓
+AI Analysis (Gemini 2.5 Flash)
+        ↓
+Structured Report
+├── What went wrong (1 sentence)
+├── Why it failed (2-3 bullets)
+└── How to fix (specific steps)
 ```
 
-## 🚀 Getting Started
+### Technical Implementation
 
-### Installation
+**Instruction Ordering Bug Fix**: Helius SDK reorders ComputeBudget instructions to the end, but Solana error indices reference the original blockchain order. Our pipeline uses raw RPC `compiledInstructions` to ensure accurate error-to-program mapping.
 
-1. Clone the repository:
+**IDL-Based Resolution**: Errors are resolved by program ID and error code against a pre-built database extracted from official IDLs, not pattern matching or guessing.
+
+**Multi-Source Strategy**: Combining Helius (high-level actions, token transfers) with raw RPC (exact instruction order, logs) provides complete context while preserving correctness.
+
+## Installation
 
 ```bash
 git clone https://github.com/tenequm/obsidian-debug
 cd obsidian-debug
-```
-
-2. Install dependencies:
-
-```bash
 pnpm install
 ```
 
-3. Set up environment variables:
-
+Create `.env.local`:
 ```bash
 cp .env.example apps/frontend/.env.local
 ```
 
-Add your API keys:
-
+Add your Helius API key:
 ```env
-NEXT_PUBLIC_RPC_ENDPOINT=https://api.mainnet-beta.solana.com
-ANTHROPIC_API_KEY=your_claude_api_key
-NEXT_PUBLIC_SITE_URL=https://soldebug.dev
+HELIUS_API_KEY=your_helius_api_key
 ```
 
-### Development
+Get a free API key at [helius.dev](https://helius.dev)
+
+## Development
 
 ```bash
-# Run dev server
-pnpm run dev
-
-# Lint code
-pnpm run lint
-
-# Format code
-pnpm run format
+pnpm dev          # Start dev server (http://localhost:3000)
+pnpm build        # Build for production
+pnpm lint         # Run Biome linter
+pnpm format       # Format code with Biome
 ```
 
-## 🛠️ Tech Stack
+## Tech Stack
 
-- **TypeScript** - Type-safe development
-- **Next.js 15** - React framework with App Router
-- **shadcn/ui** - Component library
-- **Tailwind CSS 4** - Utility-first styling
+**Frontend**
+- Next.js 16.0 (App Router)
+- React 19.2
+- TypeScript 5.9
+- Tailwind CSS 4
+- shadcn/ui components
 
-## 📄 License
+**AI & Data**
+- Vercel AI SDK
+- Google AI SDK (Gemini 2.5 Flash)
+- Helius SDK (transaction parsing)
+- @solana/web3.js
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+**Tooling**
+- Biome (linter/formatter)
+- pnpm (package manager)
+- Turbo (monorepo build system)
 
-## 🏆 Acknowledgments
+## Monorepo Structure
 
-Built for the [Colosseum Cypherpunk Hackathon](https://www.colosseum.org/cypherpunk) 2025
+```
+obsidian-protocol/
+├── apps/
+│   └── frontend/          # Next.js web application
+└── packages/
+    └── solana-errors/     # Standalone error database
+```
 
-Special thanks to:
+### Using the Error Package
 
-- Solana Foundation for blockchain infrastructure
-- Anthropic for Claude AI capabilities
-- Colosseum for the hackathon opportunity
-- The Solana developer community
+```typescript
+import { registry } from '@obsidian-debug/solana-errors';
 
-## 📬 Contact
+const error = registry.resolve(
+  'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4',
+  6001
+);
+
+console.log(`${error.name}: ${error.description}`);
+// Output: "SlippageToleranceExceeded: Slippage tolerance exceeded"
+```
+
+## Acknowledgments
+
+Built on top of:
+- [helius-labs/xray](https://github.com/helius-labs/xray) - Transaction parsing patterns
+- [bitquery/solana-idl-lib](https://github.com/bitquery/solana-idl-lib) - IDL collection
+
+Built for [Colosseum Cypherpunk Hackathon 2025](https://www.colosseum.org/cypherpunk)
+
+## License
+
+MIT - see [LICENSE](LICENSE) for details.
+
+## Contact
 
 - Website: [soldebug.dev](https://soldebug.dev)
 - Twitter: [@obsidiandebug](https://x.com/obsidiandebug)
 - GitHub: [obsidian-debug](https://github.com/tenequm/obsidian-debug)
-
-## ⚠️ Disclaimers
-
-- **Experimental Software**: Active development, features may change
-- **AI-Generated Analysis**: While highly accurate, always verify suggestions
-- **No Guarantees**: Use at your own risk, especially for mainnet transactions
-
----
-
-**Built with ❤️ on Solana**
