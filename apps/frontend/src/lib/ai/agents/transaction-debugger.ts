@@ -1,7 +1,6 @@
-// import { google } from "@ai-sdk/google";
-
 import type { AnthropicProviderOptions } from "@ai-sdk/anthropic";
 import { anthropic } from "@ai-sdk/anthropic";
+import type { GoogleGenerativeAIProviderOptions } from "@ai-sdk/google";
 import { stepCountIs, ToolLoopAgent, tool } from "ai";
 import { z } from "zod";
 import { getDebugTransaction } from "@/lib/transaction";
@@ -10,9 +9,15 @@ import { getDebugTransaction } from "@/lib/transaction";
 export const transactionDebugger = new ToolLoopAgent({
   // model: google("gemini-2.5-flash"),
   model: anthropic("claude-haiku-4-5"),
-  // temperature: 0,
+  temperature: 0,
   stopWhen: stepCountIs(5),
   providerOptions: {
+    google: {
+      // thinkingConfig: {
+      //   thinkingBudget: 12_000,
+      //   includeThoughts: true,
+      // },
+    } satisfies GoogleGenerativeAIProviderOptions,
     anthropic: {
       thinking: { type: "enabled", budgetTokens: 12_000 },
       cacheControl: { type: "ephemeral" },
@@ -182,7 +187,7 @@ You'll receive enriched transaction data including:
   - symbol: Display symbol like "BONK", "USDC", "SOL", "UNKNOWN"
   - name: Full token name like "Bonk", "USD Coin"
   - decimals: Decimal places for reference (e.g., 5 for BONK, 6 for USDC)
-  - Example: tokens["98sMhv..."] = { symbol: "BONK", name: "Bonk", decimals: 5 }
+  - Example: tokens["6YX5T8BjHmo8GWRRtQG9uSQNSs3L8XvHXCwGRV8bjjS7"] = { symbol: "BONK", name: "Bonk", decimals: 5 }
 - tokenAmount values are already decimal-adjusted (e.g., 0.000123 is the actual SOL amount)
 - If tokens record is empty (metadata fetch failed), use generic "tokens" with mint hint
 
@@ -244,8 +249,8 @@ You'll receive enriched transaction data including:
 
 - **ALWAYS use token symbols from tokens record, NEVER mint addresses**
   - Good: "9,876,543.21 BONK" or "1,234.56 USDC" or "0.000123 SOL"
-  - Bad: "0.000123 tokens" or "token 98sMhv..."
-  - If metadata unavailable: "tokens (mint: 98sM...8h5g)"
+  - Bad: "0.000123 tokens" or "token CHUBwcGSRBpdx19qtQKB8Foq5GuLLvpVmpCw7cvbLATn"
+  - If metadata unavailable: "tokens (mint: CHUBwcGSRBpdx19qtQKB8Foq5GuLLvpVmpCw7cvbLATn)"
 - **Format token amounts correctly**
   - ⚠️ CRITICAL: tokenAmount is ALREADY decimal-adjusted! DO NOT multiply by decimals!
   - If you see tokenAmount: 0.000123 → display as "0.000123 SOL" (just round)
@@ -341,20 +346,20 @@ IMPORTANT: You MUST call this tool before analyzing any transaction. Do not atte
     generateTimeline: tool({
       description: `Display a visual timeline showing transaction execution flow.
 
-WHEN TO USE: Only when user explicitly requests visualization ("show timeline", "visualize execution", etc.)
+    WHEN TO USE: Only when user explicitly requests visualization ("show timeline", "visualize execution", etc.)
 
-CONSTRUCTION:
-1. Map executionFlow to steps array with: id, index, program, programName, status, computeUnits, errorMessage, narrative
-2. Generate 1-sentence narratives (max 15 words) using:
-   - Specific amounts from semantic.actions with proper formatting ("0.000123 SOL" not "some tokens")
-   - Program names not addresses ("Meteora" not "CPm2...")
-   - Error types from errorName for failed steps
-3. Calculate totalCompute (sum all computeUnits) and failedAtStep (first failure index)
+    CONSTRUCTION:
+    1. Map executionFlow to steps array with: id, index, program, programName, status, computeUnits, errorMessage, narrative
+    2. Generate 1-sentence narratives (max 15 words) using:
+       - Specific amounts from semantic.actions with proper formatting ("0.000123 SOL" not "some tokens")
+       - Program names not addresses ("Meteora" not "CPm2669GNmpdcRF2FmpjZmPtnpKD7L9tkFd92XSPEN85i45")
+       - Error types from errorName for failed steps
+    3. Calculate totalCompute (sum all computeUnits) and failedAtStep (first failure index)
 
-NARRATIVE EXAMPLES:
-- "Set compute budget for transaction execution"
-- "Swapped 9,876,543.21 BONK for 1,234.56 USDC via Meteora"
-- "Failed: slippage tolerance exceeded, output too low"`,
+    NARRATIVE EXAMPLES:
+    - "Set compute budget for transaction execution"
+    - "Swapped 9,876,543.21 BONK for 1,234.56 USDC via Meteora"
+    - "Failed: slippage tolerance exceeded, output too low"`,
       inputSchema: z.object({
         timeline: z.object({
           signature: z.string(),
