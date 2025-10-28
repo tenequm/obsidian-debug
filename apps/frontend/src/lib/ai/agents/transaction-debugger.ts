@@ -9,7 +9,7 @@ import { getDebugTransaction } from "@/lib/transaction";
 export const transactionDebugger = new ToolLoopAgent({
   // model: google("gemini-2.5-flash"),
   model: anthropic("claude-haiku-4-5"),
-  temperature: 0,
+  // temperature: 0,
   stopWhen: stepCountIs(5),
   providerOptions: {
     google: {
