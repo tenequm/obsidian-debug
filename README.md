@@ -6,6 +6,8 @@ AI-powered Solana transaction debugger. Analyzes failed transactions and provide
 [![Hackathon](https://img.shields.io/badge/Colosseum-Cypherpunk%202025-yellow)](https://www.colosseum.org/cypherpunk)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
+> **🚀 Powered by [`solana-idls`](https://github.com/tenequm/solana-idls)** - A standalone npm package providing 1,786+ error definitions from 41 Solana protocols. Published for ecosystem-wide use.
+
 ## Live Demo
 
 **[soldebug.dev](https://soldebug.dev)**
@@ -22,7 +24,7 @@ Solana transaction errors are cryptic (`custom program error: 0x1772`, `Instruct
 
 ## Error Database
 
-Standalone `solana-idls` package covering:
+The debugger uses [`solana-idls`](https://github.com/tenequm/solana-idls) - a standalone TypeScript package providing error resolution, instruction metadata, and account names for 41 Solana protocols:
 
 | Category | Protocols | Error Count |
 |----------|-----------|-------------|
@@ -31,7 +33,7 @@ Standalone `solana-idls` package covering:
 | NFTs | Metaplex (Token Metadata, Candy Machine, Bubblegum, etc.) | 604 |
 | Infrastructure | SPL Token, Token-2022, Drift, Anchor Framework | 434 |
 
-All errors extracted from official program IDLs for 100% accuracy.
+All data extracted from official program IDLs for 100% accuracy.
 
 ## Architecture
 
@@ -112,29 +114,19 @@ pnpm format       # Format code with Biome
 - pnpm (package manager)
 - Turbo (monorepo build system)
 
-## Monorepo Structure
+## Project Structure
+
+This is a monorepo containing the Obsidian Debug web application. The error resolution library has been published as a separate package on npm.
 
 ```
 obsidian-protocol/
-├── apps/
-│   └── frontend/          # Next.js web application
-└── packages/
-    └── solana-errors/     # Standalone error database
+└── apps/
+    └── frontend/          # Next.js web application
 ```
 
-### Using the Error Package
+## Related Projects
 
-```typescript
-import { registry } from 'solana-idls';
-
-const error = registry.resolve(
-  'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4',
-  6001
-);
-
-console.log(`${error.name}: ${error.description}`);
-// Output: "SlippageToleranceExceeded: Slippage tolerance exceeded"
-```
+**[solana-idls](https://github.com/tenequm/solana-idls)** - TypeScript library providing error resolution and instruction metadata for 41+ Solana protocols. Published on npm, built for this debugger, available for ecosystem-wide use.
 
 ## Acknowledgments
 
