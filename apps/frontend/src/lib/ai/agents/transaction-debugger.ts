@@ -8,7 +8,8 @@ import { getDebugTransaction } from "@/lib/transaction";
 // Transaction Debugger Agent - analyzes Solana transaction failures using AI SDK v6 ToolLoopAgent
 export const transactionDebugger = new ToolLoopAgent({
   // model: google("gemini-2.5-flash"),
-  model: anthropic("claude-haiku-4-5"),
+  model: anthropic("claude-sonnet-4-5-20250929"),
+  // model: anthropic("claude-haiku-4-5"),
   // temperature: 0,
   stopWhen: stepCountIs(5),
   providerOptions: {
