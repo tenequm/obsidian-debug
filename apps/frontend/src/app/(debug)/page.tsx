@@ -204,7 +204,7 @@ export default function DebugPage() {
                 </div>
               </div>
             ) : (
-              messages.map((message) => (
+              messages.map((message, messageIndex) => (
                 <Message from={message.role} key={message.id}>
                   <MessageAvatar
                     name={message.role === "user" ? "You" : "Claude"}
@@ -213,6 +213,23 @@ export default function DebugPage() {
                   <MessageContent>
                     {message.parts.map((part, partIndex) => {
                       if (part.type === "text") {
+                        // First user message: make the transaction signature clickable
+                        if (messageIndex === 0 && message.role === "user") {
+                          const txSignature = part.text?.trim() || "";
+                          return (
+                            <div key={`${message.id}-text-${partIndex}`}>
+                              <a
+                                className="font-mono underline hover:opacity-80"
+                                href={`https://solscan.io/tx/${txSignature}`}
+                                rel="noopener noreferrer"
+                                target="_blank"
+                              >
+                                {txSignature}
+                              </a>
+                            </div>
+                          );
+                        }
+
                         return (
                           <Response key={`${message.id}-text-${partIndex}`}>
                             {part.text}
