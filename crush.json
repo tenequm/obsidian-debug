@@ -8,6 +8,7 @@
   },
   "mcp": {
     "next-devtools": {
+      "disabled": true,
       "type": "stdio",
       "command": "npx",
       "args": ["-y", "next-devtools-mcp@latest"]
