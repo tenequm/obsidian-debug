@@ -19,7 +19,7 @@
     "@ai-sdk/google": "3.0.0-beta.33",
     "@ai-sdk/react": "3.0.0-beta.80",
     "@nifty-oss/asset": "^0.6.1",
-    "@obsidian-debug/solana-errors": "workspace:*",
+    "solana-idls": "workspace:*",
     "@onsol/tldparser": "^1.0.8",
     "@radix-ui/react-avatar": "^1.1.10",
     "@radix-ui/react-collapsible": "^1.1.12",

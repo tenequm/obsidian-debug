@@ -14,7 +14,7 @@
     "test": "turbo test",
     "changeset": "changeset",
     "version-packages": "changeset version",
-    "release": "turbo build --filter=@obsidian-debug/solana-errors^... && changeset publish"
+    "release": "turbo build --filter=solana-idls^... && changeset publish"
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.7",

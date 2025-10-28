@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
   transpilePackages: [
     "@t3-oss/env-nextjs",
     "@t3-oss/env-core",
-    "@obsidian-debug/solana-errors", // Instant dev updates from source
+    "solana-idls", // Instant dev updates from source
   ],
   reactCompiler: true,
 

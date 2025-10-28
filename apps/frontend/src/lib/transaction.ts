@@ -3,7 +3,6 @@
  * Single source of truth for transaction data processing
  */
 
-import { registry } from "@obsidian-debug/solana-errors";
 import type {
   MessageCompiledInstruction,
   VersionedTransactionResponse,
@@ -11,6 +10,7 @@ import type {
 import { Connection } from "@solana/web3.js";
 import type { EnrichedTransaction } from "helius-sdk";
 import { Helius } from "helius-sdk";
+import { registry } from "solana-idls";
 import { env } from "@/env";
 import { parseTransaction } from "./xray";
 import { publicKeyMappings } from "./xray/config";

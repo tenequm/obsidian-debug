@@ -22,7 +22,7 @@ Solana transaction errors are cryptic (`custom program error: 0x1772`, `Instruct
 
 ## Error Database
 
-Standalone `@obsidian-debug/solana-errors` package covering:
+Standalone `solana-idls` package covering:
 
 | Category | Protocols | Error Count |
 |----------|-----------|-------------|
@@ -125,7 +125,7 @@ obsidian-protocol/
 ### Using the Error Package
 
 ```typescript
-import { registry } from '@obsidian-debug/solana-errors';
+import { registry } from 'solana-idls';
 
 const error = registry.resolve(
   'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4',
