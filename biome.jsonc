@@ -2,7 +2,9 @@
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
   "root": true,
   "extends": ["ultracite"],
-  "files": { "includes": ["!packages/solana-errors/idl/**/*"] },
+  "files": {
+    "includes": ["!packages/solana-errors/idl/**/*", "!.claude/**/*"]
+  },
   "linter": {
     "rules": {
       "suspicious": {

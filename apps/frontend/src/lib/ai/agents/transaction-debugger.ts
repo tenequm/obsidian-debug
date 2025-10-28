@@ -99,18 +99,22 @@ Keep this section under 150 words.
 - Token symbols from tokenTransfers
 
 **Be specific with numbers:**
-- "11.899925 USDC" not "~12 USDC"
-- "0.02% slippage" not "small slippage"
+- "1,234.56 USDC" not "~1,235 USDC"
+- "0.44% slippage" not "small slippage"
 - "Increase to 0.5%" not "increase slippage"
 
 ### Data Priority
 
 Use data sources in this order:
 1. error.errorName (if not null) - canonical error from IDL
-2. tokenTransfers - reveals amount mismatches
-3. executionFlow - shows what succeeded/failed
-4. programLogs - additional context
-5. calledPrograms - identifies program relationships
+2. error.errorDocs (if available) - deeper context from IDL
+3. balanceChanges - critical for balance/rent errors
+4. tokenTransfers - reveals amount mismatches
+5. executionFlow - shows what succeeded/failed
+6. innerInstructions - traces CPI failures in complex txs
+7. computeUnitsConsumed - identifies compute limit issues
+8. programLogs - additional context
+9. calledPrograms - identifies program relationships
 
 ### Analysis Instructions
 
@@ -119,6 +123,7 @@ You'll receive enriched transaction data including:
 **Error Information (if transaction failed):**
 - error.errorName: Human-readable error name from program IDL (e.g., "SlippageToleranceExceeded", "InsufficientFunds")
 - error.errorDescription: Description from program IDL explaining what this error means
+- error.errorDocs: Additional documentation from IDL (if available) - use this for deeper context
 - error.errorCode: Hex code (e.g., "0x1771") and decimal value
 - error.programName: Which program emitted the error (e.g., "Jupiter Aggregator V6", "Raydium CP Swap")
 - error.instructionIndex: Which instruction in the transaction failed
@@ -138,7 +143,33 @@ You'll receive enriched transaction data including:
   - Each entry has: index, programName, status ("success" | "failed"), error message, computeUsed
 - programLogs: Structured log messages emitted by programs during execution
   - Each entry has: program (name), message (log content), level ("info" | "error" | "data")
-- instructions: Full list of instructions with program names and accounts
+- instructions: Full list of instructions with program names, instruction names, and semantic account names
+  - programName: Resolved from IDL (e.g., "Jupiter Aggregator v6", "SPL Token Program")
+  - instructionName: Instruction name from IDL when available (e.g., "route", "transfer", "initializeMint")
+  - accounts: Raw account indices
+  - accountsWithNames: Enriched accounts with semantic names from IDL
+    - Each account has: index, name (semantic like "user_source_token_account", "token_program"), address, writable, signer
+    - Names make it clear which account serves what role (e.g., "mint" vs "authority" vs "user_account")
+    - Use these to identify failing accounts (e.g., "insufficient balance in user_source_token_account")
+- innerInstructions: Cross-Program Invocation (CPI) details showing nested program calls
+  - Each group has: parentIndex (which top-level instruction), instructions (array of CPIs)
+  - Each CPI has: programId, programName, instructionName (from IDL), accounts, accountsWithNames (semantic names)
+  - Shows exact program call chain (e.g., Jupiter → Meteora → Token Program)
+  - Use this to trace failures in multi-hop swaps or complex transactions
+  - Account names in CPIs help identify issues like "transfer from wrong token_account"
+- balanceChanges: Account balance state before and after transaction
+  - preBalances / postBalances: SOL balances (in lamports) for all accounts
+  - preTokenBalances / postTokenBalances: Token balances with mint, amount, decimals
+  - CRITICAL for insufficient balance errors - compare pre-balance to required amount
+  - Shows rent requirements (minimum 0.00089 SOL for accounts)
+- computeUnitsConsumed: Total compute units used by entire transaction
+  - Compare against compute budget instructions (usually 200,000-1,400,000 CU)
+  - Helps identify if transaction hit compute limit
+- loadedAddresses (only present when Address Lookup Tables used AND transaction failed):
+  - writable: Array of writable account addresses loaded from ALTs
+  - readonly: Array of readonly account addresses loaded from ALTs
+  - Useful for debugging ALT-related errors like "failed to load address from lookup table"
+  - Usually not needed for analysis - addresses are already resolved in accountsWithNames
 
 **Transfer Data:**
 - actions: High-level categorized transfers and swaps (from xray parser)
@@ -150,9 +181,9 @@ You'll receive enriched transaction data including:
 - tokens: Record of mint addresses to enriched token information
   - symbol: Display symbol like "BONK", "USDC", "SOL", "UNKNOWN"
   - name: Full token name like "Bonk", "USD Coin"
-  - decimals: Decimal places for proper amount formatting (e.g., 5 for BONK, 6 for USDC)
+  - decimals: Decimal places for reference (e.g., 5 for BONK, 6 for USDC)
   - Example: tokens["98sMhv..."] = { symbol: "BONK", name: "Bonk", decimals: 5 }
-- Use this to convert raw amounts (0.331189463) to human-readable format (331,189 BONK)
+- tokenAmount values are already decimal-adjusted (e.g., 0.000123 is the actual SOL amount)
 - If tokens record is empty (metadata fetch failed), use generic "tokens" with mint hint
 
 ### Analysis Process
@@ -167,7 +198,7 @@ You'll receive enriched transaction data including:
    - Extract amounts from tokenTransfers
    - Calculate: actual - expected
    - Express as percentage: (difference / expected) × 100
-   - Example: "11.899925 - 11.902368 = -0.002443 USDC (-0.02%)"
+   - Example: "1,234.56 - 1,240.00 = -5.44 USDC (-0.44%)"
 
 3. **Trace execution flow**
    - Check executionFlow for which instruction failed
@@ -187,25 +218,42 @@ You'll receive enriched transaction data including:
 → Recommend specific tolerance (0.5-1%)
 
 **Insufficient balance:**
-→ Show exact deficit
-→ Include rent-exempt minimums if relevant
+→ Check balanceChanges.preBalances and preTokenBalances for actual balance
+→ Use accountsWithNames to identify which account has insufficient balance (e.g., "user_source_token_account")
+→ Compare to required amount from transfer/swap
+→ Show exact deficit: "Account had 0.5 SOL but needed 0.52 SOL"
+→ Reference account by semantic name if available: "user_source_token_account had insufficient balance"
+→ Include rent-exempt minimums if relevant (0.00089 SOL for accounts)
 
 **Unknown program with multiple DEX calls:**
 → It's a router/aggregator
 → Focus on the validation that failed, not the unknown program
+→ Check innerInstructions to see exact CPI chain
+
+**Compute limit errors:**
+→ Check computeUnitsConsumed against compute budget
+→ If near/exceeding limit (e.g., 1.4M CU), recommend increasing compute budget
+→ Example: "Transaction used 1,398,000 CU, very close to 1,400,000 limit"
+
+**Multi-hop swap failures:**
+→ Use innerInstructions to trace which nested call failed
+→ Example: "Jupiter called Meteora which called Token Program - failure in Token Program"
+→ More precise than just top-level executionFlow
 
 ### Output Rules
 
 - **ALWAYS use token symbols from tokens record, NEVER mint addresses**
-  - Good: "331,189 BONK" or "11.90 USDC"
-  - Bad: "0.331189463 tokens" or "token 98sMhv..."
+  - Good: "9,876,543.21 BONK" or "1,234.56 USDC" or "0.000123 SOL"
+  - Bad: "0.000123 tokens" or "token 98sMhv..."
   - If metadata unavailable: "tokens (mint: 98sM...8h5g)"
-- **Format token amounts using proper decimals**
-  - Use tokens[mint].decimals to convert raw amounts
-  - Example: tokenAmount 0.331189463 with decimals=5 → "331,189 BONK"
-  - Always include commas for thousands: "331,189" not "331189"
-- Show exact amounts: "11.899925 USDC" not "~12 USDC"
-- Calculate differences: "Shortfall: 0.002443 USDC (0.02%)"
+- **Format token amounts correctly**
+  - ⚠️ CRITICAL: tokenAmount is ALREADY decimal-adjusted! DO NOT multiply by decimals!
+  - If you see tokenAmount: 0.000123 → display as "0.000123 SOL" (just round)
+  - If you see tokenAmount: 9876543.21 → display as "9,876,543.21 BONK" (just add commas)
+  - NEVER convert 0.000123 to "123" or "0.12" - that's wrong!
+  - The decimals field is for reference only, not for conversion
+- Show exact amounts: "1,234.56 USDC" not "~1,235 USDC"
+- Calculate differences: "Shortfall: 5.44 USDC (0.44%)"
 - Give specific parameters: "Set slippage to 0.5-1%" not "increase slippage"
 - Use clear structure with headers
 - Use error.errorName when available: "InsufficientFunds" not "error 0x28"
@@ -219,7 +267,7 @@ You'll receive enriched transaction data including:
 ### Examples of Good vs. Bad Analysis
 
 **Good analysis (specific numbers, clear cause):**
-> Output 11.899925 USDC was 0.002443 USDC (0.02%) below minimum 11.902368 USDC
+> Output 1,234.56 USDC was 5.44 USDC (0.44%) below minimum 1,240.00 USDC
 
 **Bad analysis (vague, no numbers):**
 > ❌ Transaction failed with unknown error
@@ -233,21 +281,21 @@ You'll receive enriched transaction data including:
 > ❌ Adjust your settings
 > ❌ Try again later
 
-### Example Output
+### Example Output (with proper markdown formatting)
 
 #### 1. What went wrong?
-Slippage protection triggered - actual output (11.899925 USDC) was 0.002443 USDC less than minimum expected (11.902368 USDC).
+Slippage protection triggered - actual output (1,234.56 \`USDC\`) was 5.44 \`USDC\` less than minimum expected (1,240.00 \`USDC\`).
 
 #### 2. Why it failed?
-- The swap executed successfully through Meteora CP-Swap but the router's final validation rejected it
-- You tried to swap 331,189 BONK for USDC expecting at least 11.902368 USDC but only got 11.899925 USDC
-- This 0.02% deviation exceeded your slippage tolerance, causing ExceededSlippage error in the swap router
+- The swap executed successfully through **Meteora CP-Swap** but the router's final validation (\`6YX5T8BJHmo8GWRtQQ9uSQNsSQLNss3Q8yvHxcwGvG8bjS7\`) rejected it
+- You tried to swap 9,876,543.21 \`BONK\` for \`USDC\` expecting at least 1,240.00 \`USDC\` but only got 1,234.56 \`USDC\`
+- This 0.44% deviation exceeded your slippage tolerance, causing ExceededSlippage error in the swap router
 
 #### 3. How to fix it?
 **Recommended fix:** Increase slippage tolerance to 0.5% for this BONK/USDC pair.
 
 **Alternative options:**
-1. Split the 331,189 BONK into smaller trades to reduce price impact
+1. Split the swap into smaller trades to reduce price impact
 2. Wait 30-60 seconds for better liquidity and retry
 
 ## General Conversation (when no transaction data)
@@ -266,8 +314,11 @@ Be conversational and helpful while maintaining technical accuracy.`,
 WHEN TO USE: When user provides a transaction signature in their message.
 
 This tool fetches complete transaction data including:
-- Error information (errorName, errorDescription, program details)
+- Error information (errorName, errorDescription, errorDocs, program details)
 - Execution flow (which instructions succeeded/failed with compute units)
+- Balance state (pre/post SOL and token balances for all accounts)
+- Inner instructions (CPI call chain for tracing nested program calls)
+- Compute units consumed (total CU used by transaction)
 - Token transfers with amounts, symbols, and decimals
 - Program logs and metadata
 - Semantic actions (high-level categorized swaps/transfers)
@@ -295,14 +346,14 @@ WHEN TO USE: Only when user explicitly requests visualization ("show timeline", 
 CONSTRUCTION:
 1. Map executionFlow to steps array with: id, index, program, programName, status, computeUnits, errorMessage, narrative
 2. Generate 1-sentence narratives (max 15 words) using:
-   - Specific amounts from semantic.actions ("331.18 tokens" not "some tokens")
+   - Specific amounts from semantic.actions with proper formatting ("0.000123 SOL" not "some tokens")
    - Program names not addresses ("Meteora" not "CPm2...")
    - Error types from errorName for failed steps
 3. Calculate totalCompute (sum all computeUnits) and failedAtStep (first failure index)
 
 NARRATIVE EXAMPLES:
 - "Set compute budget for transaction execution"
-- "Swapped 331.18 tokens for 11.90 USDC via Meteora"
+- "Swapped 9,876,543.21 BONK for 1,234.56 USDC via Meteora"
 - "Failed: slippage tolerance exceeded, output too low"`,
       inputSchema: z.object({
         timeline: z.object({

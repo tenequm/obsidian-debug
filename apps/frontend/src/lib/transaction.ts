@@ -27,6 +27,26 @@ export interface TokenMetadata {
   logoURI?: string;
 }
 
+export interface TokenBalance {
+  accountIndex: number;
+  mint: string;
+  uiTokenAmount: {
+    amount: string;
+    decimals: number;
+    uiAmount: number | null;
+    uiAmountString: string;
+  };
+  owner?: string;
+  programId?: string;
+}
+
+export interface BalanceChanges {
+  preBalances: number[]; // SOL balances before (lamports)
+  postBalances: number[]; // SOL balances after (lamports)
+  preTokenBalances: TokenBalance[];
+  postTokenBalances: TokenBalance[];
+}
+
 export interface DebugTransaction {
   // Core identifiers
   signature: string;
@@ -62,6 +82,14 @@ export interface DebugTransaction {
     logs: string[];
     executionFlow: InstructionExecution[];
     programLogs: ProgramLog[];
+    innerInstructions: InnerInstructionGroup[]; // CPI call details
+    balanceChanges: BalanceChanges;
+    computeUnitsConsumed: number | null;
+    loadedAddresses?: {
+      // Only included when ALTs are used AND transaction failed
+      writable: string[];
+      readonly: string[];
+    };
   };
 
   // Error information (enriched with registry)
@@ -83,10 +111,35 @@ export interface DebugTransaction {
   };
 }
 
+export interface InstructionAccount {
+  index: number;
+  name?: string; // Semantic name from IDL (if available)
+  address?: string; // Resolved address
+  writable?: boolean;
+  signer?: boolean;
+}
+
 export interface RawInstruction {
   programId: string;
+  programName?: string; // Program name from registry
+  instructionName?: string; // Instruction name from IDL (if available)
   accounts: number[];
+  accountsWithNames?: InstructionAccount[]; // Enriched accounts with semantic names
   data: string;
+}
+
+export interface InnerInstruction {
+  programId: string;
+  programName: string;
+  instructionName?: string; // Instruction name from IDL (if available)
+  accounts: number[];
+  accountsWithNames?: InstructionAccount[]; // Enriched accounts with semantic names
+  data: string;
+}
+
+export interface InnerInstructionGroup {
+  parentIndex: number; // Index of the parent instruction
+  instructions: InnerInstruction[]; // CPIs made by the parent
 }
 
 export interface InstructionExecution {
@@ -112,6 +165,7 @@ export interface EnrichedError {
   errorCodeDecimal: number;
   errorName: string | null;
   errorDescription: string | null;
+  errorDocs?: readonly string[]; // Additional documentation from IDL
   rawError: unknown;
   programMetadata?: ProgramMetadata;
   calledPrograms?: Array<{ programId: string; programName: string }>;
@@ -129,6 +183,7 @@ export interface TokenTransfer {
   fromUserAccount: string;
   toUserAccount: string;
   tokenAmount: number;
+  decimals: number;
   mint: string;
   tokenStandard: string;
 }
@@ -170,18 +225,110 @@ async function fetchTransactionData(signature: string) {
 // NORMALIZE
 // =============================================================================
 
+/**
+ * Options for resolving instruction accounts
+ */
+interface ResolveAccountsOptions {
+  programId: string;
+  instructionData: Buffer;
+  accountIndices: number[];
+  allAccountKeys: Array<{ toString(): string }>;
+  instructionIndex?: number;
+}
+
+/**
+ * Resolve instruction accounts using IDL metadata
+ * Returns array of accounts with semantic names from IDL (if available)
+ */
+function resolveInstructionAccounts(
+  options: ResolveAccountsOptions
+): InstructionAccount[] {
+  const {
+    programId,
+    instructionData,
+    accountIndices,
+    allAccountKeys,
+    instructionIndex,
+  } = options;
+
+  // Try discriminator-based lookup first (modern Anchor)
+  const discriminator = instructionData.slice(0, 8);
+  let instructionInfo = registry.resolveInstruction(programId, discriminator);
+
+  // Fallback to position-based lookup (old Anchor without discriminators)
+  if (!instructionInfo && instructionIndex !== undefined) {
+    instructionInfo = registry.resolveInstructionByPosition(
+      programId,
+      instructionIndex
+    );
+  }
+
+  // If no IDL instruction found, return accounts without names
+  if (!instructionInfo) {
+    return accountIndices.map((index) => ({
+      index,
+      address: allAccountKeys[index]?.toString(),
+    }));
+  }
+
+  // Map account indices to IDL account names
+  return accountIndices.map((index, i) => {
+    const idlAccount = instructionInfo.accounts[i];
+    return {
+      index,
+      name: idlAccount?.name,
+      address: allAccountKeys[index]?.toString(),
+      writable: idlAccount?.writable,
+      signer: idlAccount?.signer,
+    };
+  });
+}
+
 function extractRawInstructions(
   rawTx: VersionedTransactionResponse
 ): RawInstruction[] {
   const { message } = rawTx.transaction;
   const { staticAccountKeys } = message;
+  const loadedAddresses = rawTx.meta?.loadedAddresses;
   const instructions = message.compiledInstructions;
 
-  return instructions.map((inst: MessageCompiledInstruction) => ({
-    programId: staticAccountKeys[inst.programIdIndex]?.toString() ?? "",
-    accounts: inst.accountKeyIndexes,
-    data: Buffer.from(inst.data).toString("base64"),
-  }));
+  // Build complete account key list for account resolution
+  const allAccountKeys = [
+    ...staticAccountKeys,
+    ...(loadedAddresses?.writable?.map((addr) => addr) || []),
+    ...(loadedAddresses?.readonly?.map((addr) => addr) || []),
+  ];
+
+  return instructions.map((inst: MessageCompiledInstruction, index) => {
+    const programId = staticAccountKeys[inst.programIdIndex]?.toString() ?? "";
+    const data = Buffer.from(inst.data);
+    const accountIndices = inst.accountKeyIndexes;
+
+    // Resolve instruction accounts with semantic names
+    const accountsWithNames = resolveInstructionAccounts({
+      programId,
+      instructionData: data,
+      accountIndices,
+      allAccountKeys,
+      instructionIndex: index,
+    });
+
+    // Try to get instruction name from IDL
+    const discriminator = data.slice(0, 8);
+    let instructionInfo = registry.resolveInstruction(programId, discriminator);
+    if (!instructionInfo) {
+      instructionInfo = registry.resolveInstructionByPosition(programId, index);
+    }
+
+    return {
+      programId,
+      programName: getProgramName(programId),
+      instructionName: instructionInfo?.name,
+      accounts: accountIndices,
+      accountsWithNames,
+      data: data.toString("base64"),
+    };
+  });
 }
 
 function getProgramName(programId: string): string {
@@ -225,6 +372,31 @@ function normalizeTransaction(
       logs: rawTx.meta?.logMessages || [],
       executionFlow: [],
       programLogs: [],
+      innerInstructions: [], // Will be enriched
+      balanceChanges: {
+        preBalances: rawTx.meta?.preBalances || [],
+        postBalances: rawTx.meta?.postBalances || [],
+        preTokenBalances:
+          (rawTx.meta?.preTokenBalances as TokenBalance[]) || [],
+        postTokenBalances:
+          (rawTx.meta?.postTokenBalances as TokenBalance[]) || [],
+      },
+      computeUnitsConsumed: rawTx.meta?.computeUnitsConsumed ?? null,
+      // Conditionally add loaded addresses (only when ALTs used AND transaction failed)
+      ...(rawTx.meta?.loadedAddresses && heliusTx.transactionError
+        ? {
+            loadedAddresses: {
+              writable:
+                rawTx.meta.loadedAddresses.writable?.map((addr) =>
+                  addr.toString()
+                ) ?? [],
+              readonly:
+                rawTx.meta.loadedAddresses.readonly?.map((addr) =>
+                  addr.toString()
+                ) ?? [],
+            },
+          }
+        : {}),
     },
 
     error: heliusTx.transactionError
@@ -300,6 +472,80 @@ function parseInstructionError(error: unknown): {
   }
 
   return null;
+}
+
+function parseInnerInstructions(
+  rawTx: VersionedTransactionResponse
+): InnerInstructionGroup[] {
+  const innerInstructions = rawTx.meta?.innerInstructions;
+  if (!innerInstructions || innerInstructions.length === 0) {
+    return [];
+  }
+
+  const { staticAccountKeys } = rawTx.transaction.message;
+  const loadedAddresses = rawTx.meta?.loadedAddresses;
+
+  // Build complete account key list: static + writable loaded + readonly loaded
+  const allAccountKeys = [
+    ...staticAccountKeys,
+    ...(loadedAddresses?.writable?.map((addr) => addr) || []),
+    ...(loadedAddresses?.readonly?.map((addr) => addr) || []),
+  ];
+
+  return innerInstructions.map((group) => ({
+    parentIndex: group.index,
+    instructions: group.instructions.map((inst) => {
+      const programId = allAccountKeys[inst.programIdIndex]?.toString() ?? "";
+      // Inner instructions use 'accounts' property, not 'accountKeyIndexes'
+      const accounts =
+        (inst as unknown as { accounts: number[] }).accounts || [];
+
+      // Parse instruction data (already base58 string or Buffer)
+      let dataBuffer: Buffer;
+      let dataBase64: string;
+
+      if (typeof inst.data === "string") {
+        // Inner instructions already have data as base58 string
+        // We need to keep it as-is for now since we can't parse base58 in Node without a library
+        dataBase64 = inst.data; // Keep as base58 for now
+        // For discriminator matching, we need raw bytes but we don't have them
+        // So we'll skip discriminator matching for inner instructions
+        dataBuffer = Buffer.alloc(0);
+      } else {
+        dataBuffer = Buffer.from(inst.data);
+        dataBase64 = dataBuffer.toString("base64");
+      }
+
+      // Resolve instruction accounts with semantic names (skip for inner instructions without buffer)
+      const accountsWithNames =
+        dataBuffer.length > 0
+          ? resolveInstructionAccounts({
+              programId,
+              instructionData: dataBuffer,
+              accountIndices: accounts,
+              allAccountKeys,
+            })
+          : accounts.map((index) => ({
+              index,
+              address: allAccountKeys[index]?.toString(),
+            }));
+
+      // Try to get instruction name from IDL (only if we have discriminator)
+      const instructionInfo =
+        dataBuffer.length >= 8
+          ? registry.resolveInstruction(programId, dataBuffer.slice(0, 8))
+          : null;
+
+      return {
+        programId,
+        programName: getProgramName(programId),
+        instructionName: instructionInfo?.name,
+        accounts,
+        accountsWithNames,
+        data: dataBase64,
+      };
+    }),
+  }));
 }
 
 function parseLogMessages(logs: string[]): {
@@ -566,13 +812,17 @@ async function enrichTokenMetadata(
 
 async function enrichTransaction(
   tx: DebugTransaction,
-  helius: Helius
+  helius: Helius,
+  rawTx: VersionedTransactionResponse
 ): Promise<DebugTransaction> {
   // Parse execution flow from logs
   const { executionFlow, programLogs } = parseLogMessages(tx.execution.logs);
 
   tx.execution.executionFlow = executionFlow;
   tx.execution.programLogs = programLogs;
+
+  // Parse inner instructions (CPI calls)
+  tx.execution.innerInstructions = parseInnerInstructions(rawTx);
 
   // Enrich error if transaction failed
   if (tx.error) {
@@ -598,6 +848,7 @@ async function enrichTransaction(
         const errorDescription =
           resolved?.description ||
           (errorString ? `Solana error: ${errorString}` : null);
+        const errorDocs = resolved?.docs;
 
         tx.error = {
           instructionIndex,
@@ -607,6 +858,7 @@ async function enrichTransaction(
           errorCodeDecimal: errorCode,
           errorName,
           errorDescription,
+          errorDocs,
           rawError: tx.error.rawError,
         };
 
@@ -649,7 +901,7 @@ export async function getDebugTransaction(
 
   // 3. Enrich with registry data, execution analysis, and token metadata
   const helius = new Helius(env.HELIUS_API_KEY);
-  const enriched = await enrichTransaction(normalized, helius);
+  const enriched = await enrichTransaction(normalized, helius, rawTx);
 
   return enriched;
 }
