@@ -138,8 +138,8 @@ importers:
         specifier: ^3.13.0
         version: 3.13.0
       solana-idls:
-        specifier: ^1.0.0
-        version: 1.0.0
+        specifier: ^1.2.1
+        version: 1.2.1
       streamdown:
         specifier: ^1.4.0
         version: 1.4.0(@types/react@19.2.2)(react@19.2.0)
@@ -3604,8 +3604,13 @@ packages:
     resolution: {integrity: sha512-g9Q1haeby36OSStwb4ntCGGGaKsaVSjQ68fBxoQcutl5fS1vuY18H3wSt3jFyFtrkx+Kz0V1G85A4MyAdDMi2Q==}
     engines: {node: '>=8'}
 
-  solana-idls@1.0.0:
-    resolution: {integrity: sha512-L05AaAU1bYBa93dh4C75SdzAc27hk2YQCUrSBaQxpal/EgncsNeXnXdogF1iLOg+XetsBQPSZffz5IiJ7rhHGg==}
+  solana-idls@1.2.1:
+    resolution: {integrity: sha512-CarQOLiZYWgwRuH5SFVxW3NmDfAQ4vzohZCoPXAaE1jtqHEFxCQ+iDK5J8QaVOeou+II7Gc9lHGxmWdRWoiBYw==}
+    peerDependencies:
+      '@coral-xyz/anchor': ^0.31.0
+    peerDependenciesMeta:
+      '@coral-xyz/anchor':
+        optional: true
 
   source-map-js@1.2.1:
     resolution: {integrity: sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==}
@@ -7963,7 +7968,7 @@ snapshots:
 
   slash@3.0.0: {}
 
-  solana-idls@1.0.0: {}
+  solana-idls@1.2.1: {}
 
   source-map-js@1.2.1: {}
 
